@@ -65,9 +65,6 @@ export default function GoalsStep({ onNext }) {
         ))}
       </div>
 
-      <button onClick={onNext} style={{ ...btn('primary'), marginTop: 16 }}>
-        Continue →
-      </button>
     </div>
   )
 }

@@ -6,7 +6,6 @@ import MeetTeam from './MeetTeam'
 import SOPs from './SOPs'
 import Chatbot from '../shared/Chatbot'
 import { T, btn } from '../../styles/tokens'
-import { sops } from '../../data/sops'
 
 const NAV = [
   { id: 'home',   label: 'Home'        },
@@ -15,7 +14,7 @@ const NAV = [
 ]
 
 export default function HomeDashboard() {
-  const { currentEmployee, logout } = useApp()
+  const { currentEmployee, logout, sops } = useApp()
   const navigate = useNavigate()
   const [section, setSection] = useState('home')
 
@@ -51,7 +50,7 @@ export default function HomeDashboard() {
       </header>
 
       <main style={styles.main}>
-        {section === 'home' && <HomeSection employee={currentEmployee} watchedCount={watchedCount} setSection={setSection} />}
+        {section === 'home' && <HomeSection employee={currentEmployee} watchedCount={watchedCount} setSection={setSection} totalSops={sops.length} />}
         {section === 'team' && <MeetTeam />}
         {section === 'sops' && <SOPs />}
       </main>
@@ -61,7 +60,7 @@ export default function HomeDashboard() {
   )
 }
 
-function HomeSection({ employee, watchedCount, setSection }) {
+function HomeSection({ employee, watchedCount, setSection, totalSops }) {
   return (
     <div className="animate-fadeUp">
       <div style={styles.welcomeRow}>
@@ -93,11 +92,11 @@ function HomeSection({ employee, watchedCount, setSection }) {
           <div style={styles.cardIcon} className="animate-cardIn delay-2">📋</div>
           <div style={styles.cardLabel}>SOPs</div>
           <div style={styles.cardSub}>
-            {watchedCount} of {sops.length} watched
+            {watchedCount} of {totalSops} watched
           </div>
           <div style={{ marginTop: 10 }}>
             <div style={{ height: 4, background: 'rgba(55,74,62,.12)', borderRadius: 2 }}>
-              <div style={{ height: '100%', width: `${(watchedCount / sops.length) * 100}%`, background: T.accent, borderRadius: 2, transition: 'width .5s' }} />
+              <div style={{ height: '100%', width: `${(watchedCount / totalSops) * 100}%`, background: T.accent, borderRadius: 2, transition: 'width .5s' }} />
             </div>
           </div>
           <div style={styles.cardArrow}>→</div>
@@ -121,7 +120,7 @@ function HomeSection({ employee, watchedCount, setSection }) {
           <div style={{ height: '100%', width: '100%', background: T.accent, borderRadius: 3 }} />
         </div>
         <p style={{ fontSize: 13, opacity: .55, marginTop: 8 }}>
-          You finished onboarding on {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} · {sops.length - watchedCount > 0 ? `${sops.length - watchedCount} SOPs left to watch` : 'All SOPs watched 🎉'}
+          You finished onboarding on {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} · {totalSops - watchedCount > 0 ? `${totalSops - watchedCount} SOPs left to watch` : 'All SOPs watched 🎉'}
         </p>
       </div>
     </div>

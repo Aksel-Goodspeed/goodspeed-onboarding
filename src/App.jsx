@@ -7,9 +7,11 @@ import OnboardingFlow from './components/onboarding/OnboardingFlow'
 import HomeDashboard from './components/home/HomeDashboard'
 
 function AuthGuard({ children, require: role }) {
-  const { isAdmin, currentEmployee } = useApp()
-  if (role === 'admin'    && !isAdmin)         return <Navigate to="/" replace />
-  if (role === 'employee' && !currentEmployee)  return <Navigate to="/" replace />
+  const { isAdmin, currentEmployee, loading } = useApp()
+  // Wait for Supabase to finish loading before making an auth decision
+  if (loading) return null
+  if (role === 'admin'    && !isAdmin)        return <Navigate to="/" replace />
+  if (role === 'employee' && !currentEmployee) return <Navigate to="/" replace />
   return children
 }
 

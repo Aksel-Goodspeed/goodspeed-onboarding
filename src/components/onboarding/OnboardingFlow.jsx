@@ -15,16 +15,16 @@ import CompleteStep  from './steps/CompleteStep'
 const STEPS = [
   { id: 'welcome',  label: 'Welcome'       },
   { id: 'manager',  label: 'Your manager'  },
-  { id: 'team',     label: 'Meet the team' },
   { id: 'company',  label: 'Our story'     },
   { id: 'values',   label: 'Values'        },
+  { id: 'team',     label: 'Meet the team' },
   { id: 'goals',    label: 'Your goals'    },
   { id: 'complete', label: 'All done!'     },
 ]
 
 export default function OnboardingFlow() {
   const { token }  = useParams()
-  const { employees, startOnboarding, updateEmployee } = useApp()
+  const { employees, getByToken, startOnboarding, updateEmployee } = useApp()
   const navigate   = useNavigate()
   const [step, setStep]       = useState(0)
   const [employee, setEmployee] = useState(null)
@@ -32,25 +32,31 @@ export default function OnboardingFlow() {
   const [animKey, setAnimKey]   = useState(0)
   const sessionStarted = useRef(false)
 
-  // Derive employee directly from employees array — no stale closure
+  // Fetch employee by token directly from Supabase (async, no stale closure)
   useEffect(() => {
-    const emp = employees.find(e => e.token === token) ?? null
-    setReady(true)
-    if (!emp) return
-    setEmployee(emp)
-    if (!sessionStarted.current) {
-      sessionStarted.current = true
-      startOnboarding(token)
-    }
-    if (emp.onboardingComplete) navigate('/home', { replace: true })
-    if (emp.password && step === 0) setStep(1)
-  }, [employees, token])
+    let cancelled = false
+    getByToken(token).then(emp => {
+      if (cancelled) return
+      setReady(true)
+      if (!emp) return
+      setEmployee(emp)
+      if (!sessionStarted.current) {
+        sessionStarted.current = true
+        startOnboarding(emp.id)
+      }
+      if (emp.onboardingComplete) navigate('/home', { replace: true })
+      if (emp.password && step === 0) setStep(1)
+    })
+    return () => { cancelled = true }
+  }, [token])
 
-  // Keep local employee state fresh when employees updates
+  // Refresh local employee state from context (called after mutations)
   const refreshEmp = () => {
-    const emp = employees.find(e => e.token === token) ?? null
-    if (emp) setEmployee(emp)
-    return emp
+    if (employee) {
+      const fresh = employees.find(e => e.id === employee.id)
+      if (fresh) setEmployee(fresh)
+      return fresh
+    }
   }
 
   const goNext = () => {
@@ -98,15 +104,16 @@ export default function OnboardingFlow() {
         <div key={animKey} className="animate-fadeUp" style={{ width: '100%', maxWidth: 800 }}>
           {step === 0 && <WelcomeStep  {...stepProps} />}
           {step === 1 && <ManagerStep  {...stepProps} />}
-          {step === 2 && <MeetTeamStep {...stepProps} />}
-          {step === 3 && <CompanyStep  {...stepProps} />}
-          {step === 4 && <ValuesStep   {...stepProps} />}
+          {step === 2 && <CompanyStep  {...stepProps} />}
+          {step === 3 && <ValuesStep   {...stepProps} />}
+          {step === 4 && <MeetTeamStep {...stepProps} />}
           {step === 5 && <GoalsStep    {...stepProps} />}
           {step === 6 && <CompleteStep {...stepProps} />}
         </div>
       </main>
 
       {/* Footer nav — hidden on welcome (step 0) and complete (last step) */}
+      {/* Continue button is also hidden on the values step (step 3) — that step gates its own Continue */}
       {step > 0 && step < STEPS.length - 1 && (
         <footer style={styles.footer}>
           <button onClick={goPrev} style={styles.ghostBtn}>← Back</button>
@@ -115,7 +122,9 @@ export default function OnboardingFlow() {
               <div key={i} style={{ ...styles.dot, ...(i === step - 1 ? styles.dotActive : {}) }} />
             ))}
           </div>
-          <button onClick={goNext} style={styles.primaryBtn}>Continue →</button>
+          {STEPS[step].id !== 'values' && (
+            <button onClick={goNext} style={styles.primaryBtn}>Continue →</button>
+          )}
         </footer>
       )}
     </div>

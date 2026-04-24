@@ -30,14 +30,11 @@ export default function CompanyStep({ onNext }) {
 
       <div style={styles.highlight}>
         <span style={styles.highlightIcon}>⚡</span>
-        <p style={{ fontSize: 15, lineHeight: 1.65, color: T.text }}>
+        <p style={{ fontSize: 15, lineHeight: 1.65, color: T.white, opacity: .85 }}>
           Speed is one of the things that sets us apart. We move in days, not months — and we don't use speed as an excuse to cut corners. Quality is non-negotiable.
         </p>
       </div>
 
-      <button onClick={onNext} style={{ ...btn('primary'), marginTop: 28 }}>
-        Continue →
-      </button>
     </div>
   )
 }

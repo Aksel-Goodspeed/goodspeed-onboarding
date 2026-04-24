@@ -18,10 +18,20 @@ export default function InviteForm() {
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
-  const handleSubmit = (e) => {
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    const emp = addEmployee(form)
-    setCreated(emp)
+    setSubmitting(true)
+    try {
+      const emp = await addEmployee(form)
+      setCreated(emp)
+    } catch (err) {
+      console.error('Failed to create invite:', err)
+      alert('Something went wrong. Check your Supabase connection.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const inviteUrl = created
@@ -109,7 +119,7 @@ export default function InviteForm() {
               </div>
               <div style={styles.field}>
                 <label style={styles.label}>Start date</label>
-                <input value={form.startDate} onChange={e => set('startDate', e.target.value)} placeholder="April 22, 2026" />
+                <input type="date" value={form.startDate} onChange={e => set('startDate', e.target.value)} style={styles.dateInput} />
               </div>
             </div>
 
@@ -133,8 +143,8 @@ export default function InviteForm() {
               />
             </div>
 
-            <button type="submit" style={{ ...btn('primary'), alignSelf: 'flex-start' }}>
-              Create invite →
+            <button type="submit" disabled={submitting} style={{ ...btn('primary'), alignSelf: 'flex-start', opacity: submitting ? .6 : 1 }}>
+              {submitting ? 'Creating…' : 'Create invite →'}
             </button>
           </form>
         </div>
@@ -169,4 +179,5 @@ const styles = {
     textAlign: 'left',
   },
   linkText: { fontSize: 13, color: T.text, opacity: .6, flex: 1, wordBreak: 'break-all', fontFamily: 'monospace' },
+  dateInput: { colorScheme: 'light' },
 }

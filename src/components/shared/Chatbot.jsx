@@ -1,28 +1,19 @@
 import { useState, useRef, useEffect } from 'react'
-import { teamMembers } from '../../data/team'
-import { sops } from '../../data/sops'
+import { useApp } from '../../context/AppContext'
 import { T } from '../../styles/tokens'
 
-const KB = [
+const STATIC_KB = [
   {
     t: ['value', 'values', 'believe', 'mission', 'principles'],
-    r: `Goodspeed lives by five values:\n\n**Move Fast** — ship in days, not months.\n**Radical Honesty** — say what you think, always.\n**Client Obsessed** — their success is yours.\n**Think Bold** — no idea is off-limits.\n**Quality First** — never ship something you're not proud of.`,
+    r: `Goodspeed lives by ten values:\n\n**Our business is trust** — protect it like your most valuable asset.\n**Set the standard** — hold yourself to a level others aspire to.\n**Go slow to go fast** — clear thinking saves time when it counts.\n**Bias for action** — a good decision now beats a perfect one too late.\n**Be the owner** — if you see something that needs fixing, fix it.\n**Do what matters most** — ruthlessly prioritise what moves the needle.\n**No assumptions, no surprises** — when things change, tell people.\n**Feedback early, feedback often** — share work-in-progress, always.\n**Experiment, learn and share** — try new things and document what you learn.\n**There is always a way** — constraints are problems to solve, not reasons to stop.`,
   },
   {
     t: ['tool', 'tools', 'software', 'stack', 'figma', 'bubble', 'framer', 'linear', 'notion', 'slack'],
     r: `Here's the core stack:\n\n**Design:** Figma\n**Build:** Bubble, Framer\n**Tasks:** Linear\n**Docs:** Notion\n**Chat:** Slack\n\nYou'll pick it all up quickly — the team is happy to show you the ropes.`,
   },
   {
-    t: ['sop', 'sops', 'process', 'procedure', 'workflow', 'how do we', 'how does'],
-    r: `We have four core SOPs in the workspace: Client Onboarding, Design Handoff, Sprint Planning, and AI Feature QA. Check the SOPs tab — each one has a short video and a step-by-step breakdown.`,
-  },
-  {
-    t: ['team', 'people', 'who', 'colleague', 'coworker'],
-    r: `The team is ${teamMembers.length} people: ${teamMembers.map(m => `**${m.name}** (${m.role})`).join(', ')}.\n\nClick "Meet the Team" in the top nav to learn about each person and reveal fun facts.`,
-  },
-  {
     t: ['manager', 'boss', 'report', 'aksel', 'harish'],
-    r: `Your manager is set during your invite. Aksel (Founder & CEO) and Harish (Head of Operations) are both approachable — ping them directly on Slack anytime.`,
+    r: `Your manager is set during your invite. Harish (Founder & CEO) is approachable — ping them directly on Slack anytime.`,
   },
   {
     t: ['culture', 'vibe', 'feel', 'environment'],
@@ -42,9 +33,27 @@ const KB = [
   },
 ]
 
-function getResponse(msg, employeeName) {
+function buildKB(teamMembers, sops) {
+  return [
+    ...STATIC_KB,
+    {
+      t: ['team', 'people', 'who', 'colleague', 'coworker'],
+      r: teamMembers.length
+        ? `The team is ${teamMembers.length} people: ${teamMembers.map(m => `**${m.name}** (${m.role})`).join(', ')}.\n\nClick "Meet the Team" in the top nav to learn about each person and reveal fun facts.`
+        : `Click "Meet the Team" in the top nav to meet everyone.`,
+    },
+    {
+      t: ['sop', 'sops', 'process', 'procedure', 'workflow', 'how do we', 'how does'],
+      r: sops.length
+        ? `There are ${sops.length} SOPs in the workspace: ${sops.map(s => `**${s.title}**`).join(', ')}. Check the SOPs tab — each one has a video and a step-by-step breakdown.`
+        : `Check the SOPs tab for process guides. Each one has a video and a step-by-step breakdown.`,
+    },
+  ]
+}
+
+function getResponse(msg, kb) {
   const lower = msg.toLowerCase()
-  for (const item of KB) {
+  for (const item of kb) {
     if (item.t.some(kw => lower.includes(kw))) return item.r
   }
   return `Good question! That's best answered by your manager directly on Slack. Is there anything else I can help with?`
@@ -61,6 +70,8 @@ function renderMd(text) {
 const CHIPS = ['Our values', 'What tools do we use?', 'Meet the team', 'My goals']
 
 export default function Chatbot({ employee }) {
+  const { teamMembers, sops } = useApp()
+  const kb = buildKB(teamMembers, sops)
   const [open,     setOpen]     = useState(false)
   const [inited,   setInited]   = useState(false)
   const [msgs,     setMsgs]     = useState([])
@@ -95,7 +106,7 @@ export default function Chatbot({ employee }) {
     setTyping(true)
     setTimeout(() => {
       setTyping(false)
-      addBot(getResponse(text, employee?.name))
+      addBot(getResponse(text, kb))
     }, 600 + Math.random() * 400)
   }
 

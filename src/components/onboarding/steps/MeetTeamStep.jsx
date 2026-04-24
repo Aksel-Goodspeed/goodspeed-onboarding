@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { teamMembers } from '../../../data/team'
+import { useApp } from '../../../context/AppContext'
 import { T, eyebrow, h2Style, lead, btn } from '../../../styles/tokens'
 
-export default function MeetTeamStep({ onNext }) {
+export default function MeetTeamStep() {
+  const { teamMembers } = useApp()
   const [selected,   setSelected]   = useState(null)
   const [factIndex,  setFactIndex]  = useState(0)
   const [revealed,   setRevealed]   = useState(false)
@@ -102,12 +103,6 @@ export default function MeetTeamStep({ onNext }) {
         </div>
       )}
 
-      <button
-        onClick={onNext}
-        style={{ ...btn('primary'), marginTop: 32 }}
-      >
-        {metIds.size >= teamMembers.length ? 'Met everyone! Continue →' : 'Continue →'}
-      </button>
     </div>
   )
 }

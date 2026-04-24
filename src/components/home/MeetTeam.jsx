@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { teamMembers } from '../../data/team'
+import { useApp } from '../../context/AppContext'
 import { T, btn } from '../../styles/tokens'
 
 export default function MeetTeam() {
+  const { teamMembers } = useApp()
   const [selected,  setSelected]  = useState(null)
   const [factIdx,   setFactIdx]   = useState(0)
   const [revealed,  setRevealed]  = useState(false)

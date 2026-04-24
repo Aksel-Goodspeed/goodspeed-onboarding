@@ -1,10 +1,11 @@
-import { teamMembers } from '../../../data/team'
-import { T, eyebrow, h2Style, lead, btn } from '../../../styles/tokens'
+import { useApp } from '../../../context/AppContext'
+import { T, eyebrow, h2Style, lead } from '../../../styles/tokens'
 
-export default function ManagerStep({ employee, onNext }) {
+export default function ManagerStep({ employee }) {
+  const { teamMembers } = useApp()
   const manager = teamMembers.find(
     m => m.name.toLowerCase() === employee.managerName?.toLowerCase()
-  ) || teamMembers[0]
+  ) || teamMembers[0] || {}
 
   return (
     <div style={{ maxWidth: 620 }}>
@@ -50,9 +51,6 @@ export default function ManagerStep({ employee, onNext }) {
         </p>
       </div>
 
-      <button onClick={onNext} style={{ ...btn('primary'), marginTop: 28 }}>
-        Continue →
-      </button>
     </div>
   )
 }
