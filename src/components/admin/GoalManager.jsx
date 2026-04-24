@@ -257,7 +257,7 @@ export default function GoalManager() {
 const styles = {
   sectionTitle: { fontFamily: "'Inter',sans-serif", fontSize: 20, fontWeight: 700, color: T.heading, marginBottom: 20 },
   formCard:     { background: T.card, borderRadius: 16, padding: '24px', marginBottom: 24 },
-  form:         { display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 680 },
+  form:         { display: 'flex', flexDirection: 'column', gap: 16 },
   row:          { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 },
   field:        { display: 'flex', flexDirection: 'column', gap: 6, flex: 1 },
   label:        { fontSize: 13, fontWeight: 600, color: T.heading },
