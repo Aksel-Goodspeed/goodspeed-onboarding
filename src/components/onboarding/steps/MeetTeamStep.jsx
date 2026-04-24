@@ -2,8 +2,10 @@ import { useState } from 'react'
 import { useApp } from '../../../context/AppContext'
 import { T, eyebrow, h2Style, lead, btn } from '../../../styles/tokens'
 
-export default function MeetTeamStep() {
+export default function MeetTeamStep({ employee }) {
   const { teamMembers } = useApp()
+  // Don't show the current user — they're meeting everyone else
+  const filteredMembers = teamMembers.filter(m => m.id !== employee?.id)
   const [selected,   setSelected]   = useState(null)
   const [factIndex,  setFactIndex]  = useState(0)
   const [revealed,   setRevealed]   = useState(false)
@@ -32,12 +34,12 @@ export default function MeetTeamStep() {
         Click on anyone to learn about them — and reveal a fun fact or two.
       </p>
       <p style={{ fontSize: 13, color: T.text, opacity: .5, marginBottom: 28 }}>
-        {metIds.size} of {teamMembers.length} people met
+        {metIds.size} of {filteredMembers.length} people met
       </p>
 
       {/* Cards grid */}
       <div style={styles.grid}>
-        {teamMembers.map((m, i) => (
+        {filteredMembers.map((m, i) => (
           <div
             key={m.id}
             className={`animate-cardIn delay-${i + 1}`}

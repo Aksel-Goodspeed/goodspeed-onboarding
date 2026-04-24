@@ -2,8 +2,6 @@ import { useState } from 'react'
 import { useApp } from '../../context/AppContext'
 import { T, btn } from '../../styles/tokens'
 
-const ROLES = ['Developer', 'AI Developer', 'Designer', 'Operations']
-
 export default function EditProfile() {
   const { currentEmployee, updateEmployee } = useApp()
   const emp = currentEmployee
@@ -15,8 +13,6 @@ export default function EditProfile() {
     bio:         emp.bio         || '',
     funFacts:    [...(emp.funFacts || []), '', '', ''].slice(0, 3),
     slack:       emp.slack       || '',
-    department:  emp.department  || '',
-    role:        emp.role        || '',
     location:    emp.location    || '',
     locationLat: emp.locationLat ?? '',
     locationLng: emp.locationLng ?? '',
@@ -39,7 +35,7 @@ export default function EditProfile() {
       ...form,
       locationLat: form.locationLat !== '' ? parseFloat(form.locationLat) : null,
       locationLng: form.locationLng !== '' ? parseFloat(form.locationLng) : null,
-      funFacts: form.funFacts.filter(f => f.trim()),
+      funFacts:   form.funFacts.filter(f => f.trim()),
     }
     try {
       await updateEmployee(emp.id, data)
@@ -82,18 +78,6 @@ export default function EditProfile() {
       </div>
 
       <form onSubmit={handleSubmit} style={styles.form}>
-
-        {/* Role + Department */}
-        <div style={styles.row}>
-          <div style={styles.field}>
-            <label style={styles.label}>Role</label>
-            <select value={form.role} onChange={e => set('role', e.target.value)}>
-              <option value="">Select a role…</option>
-              {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-            </select>
-          </div>
-          <Field label="Department" value={form.department} onChange={v => set('department', v)} placeholder="Design" />
-        </div>
 
         {/* Bio */}
         <div style={styles.field}>
