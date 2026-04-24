@@ -5,14 +5,16 @@ import Logo from '../shared/Logo'
 import MeetTeam from './MeetTeam'
 import SOPs from './SOPs'
 import Goals from './Goals'
+import EditProfile from './EditProfile'
 import Chatbot from '../shared/Chatbot'
 import { T, btn } from '../../styles/tokens'
 
 const NAV = [
-  { id: 'home',   label: 'Home'          },
-  { id: 'team',   label: 'Meet the Team' },
-  { id: 'sops',   label: 'SOPs'          },
-  { id: 'goals',  label: 'My Goals'      },
+  { id: 'home',    label: 'Home'          },
+  { id: 'team',    label: 'Meet the Team' },
+  { id: 'sops',    label: 'SOPs'          },
+  { id: 'goals',   label: 'My Goals'      },
+  { id: 'profile', label: 'My Profile'    },
 ]
 
 export default function HomeDashboard() {
@@ -41,10 +43,14 @@ export default function HomeDashboard() {
           ))}
         </nav>
         <div style={styles.headerRight}>
-          <div style={styles.userChip}>
-            <div style={styles.userAvatar}>
-              {currentEmployee?.name?.charAt(0).toUpperCase()}
-            </div>
+          <div style={{ ...styles.userChip, cursor: 'pointer' }} onClick={() => setSection('profile')}>
+            {currentEmployee?.profilePicture ? (
+              <img src={currentEmployee.profilePicture} alt={currentEmployee.name} style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover' }} />
+            ) : (
+              <div style={styles.userAvatar}>
+                {currentEmployee?.name?.charAt(0).toUpperCase()}
+              </div>
+            )}
             <span>{currentEmployee?.name}</span>
           </div>
           <button onClick={handleLogout}
@@ -55,10 +61,11 @@ export default function HomeDashboard() {
       </header>
 
       <main style={styles.main}>
-        {section === 'home'  && <HomeSection employee={currentEmployee} watchedCount={watchedCount} setSection={setSection} totalSops={sops.length} completedGoalCount={completedGoalCount} totalGoals={myGoals.length} />}
-        {section === 'team'  && <MeetTeam />}
-        {section === 'sops'  && <SOPs />}
-        {section === 'goals' && <Goals />}
+        {section === 'home'    && <HomeSection employee={currentEmployee} watchedCount={watchedCount} setSection={setSection} totalSops={sops.length} completedGoalCount={completedGoalCount} totalGoals={myGoals.length} />}
+        {section === 'team'    && <MeetTeam />}
+        {section === 'sops'    && <SOPs />}
+        {section === 'goals'   && <Goals />}
+        {section === 'profile' && <EditProfile />}
       </main>
 
       <Chatbot employee={currentEmployee} />
