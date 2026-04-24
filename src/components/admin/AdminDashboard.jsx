@@ -8,7 +8,7 @@ import GoalManager from './GoalManager'
 import { T, btn } from '../../styles/tokens'
 
 const TABS = [
-  { id: 'employees', label: 'People'  },
+  { id: 'employees', label: 'Onboarding' },
   { id: 'team',      label: 'Team'    },
   { id: 'sops',      label: 'SOPs'    },
   { id: 'goals',     label: 'Goals'   },
@@ -35,9 +35,9 @@ export default function AdminDashboard() {
   }
 
   const statusInfo = (emp) => {
-    if (emp.onboardingComplete) return { label: 'Active',          color: T.accent,   bg: 'rgba(198,221,102,.18)' }
-    if (emp.password)           return { label: 'In Onboarding',   color: T.gold,     bg: 'rgba(235,195,101,.18)' }
-    return                             { label: 'Invite Pending',  color: T.coral,    bg: 'rgba(234,158,131,.18)' }
+    if (emp.onboardingComplete) return { label: 'Active',         color: T.dark,     bg: T.accent   }
+    if (emp.password)           return { label: 'In Onboarding',  color: '#5a4200',  bg: T.gold     }
+    return                             { label: 'Invite Pending', color: '#7a2f1a',  bg: T.coral    }
   }
 
   return (
@@ -207,7 +207,7 @@ const styles = {
   },
   avatar:    { width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 15 },
   cell:      { fontSize: 14, color: T.text, opacity: .8 },
-  badge:     { fontSize: 12, fontWeight: 600, padding: '3px 10px', borderRadius: 100 },
+  badge:     { fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 100, whiteSpace: 'nowrap' },
   emptyState: {
     background: T.card, borderRadius: 16, padding: '60px 24px',
     textAlign: 'center', color: T.text,
