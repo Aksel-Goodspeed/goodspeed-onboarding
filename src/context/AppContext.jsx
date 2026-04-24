@@ -129,7 +129,7 @@ export function AppProvider({ children }) {
       role:                data.role,
       start_date:          data.startDate || null,
       personal_message:    data.personalMessage || '',
-      manager_name:        data.managerName || 'Harish',
+      manager_name:        data.managerName || 'Harish',  // CEO default
       onboarding_complete: false,
       watched_sops:        [],
     }
@@ -164,6 +164,14 @@ export function AppProvider({ children }) {
   }
 
   const getById = (id) => employees.find(e => e.id === id) || null
+
+  const generateResetToken = async (id) => {
+    const newToken = genToken()
+    const { error } = await supabase.from('employees').update({ token: newToken }).eq('id', id)
+    if (error) throw error
+    setEmployees(prev => prev.map(e => e.id === id ? { ...e, token: newToken } : e))
+    return newToken
+  }
 
   // ── team members (same objects as employees) ──────────────────────────────
 
@@ -246,7 +254,7 @@ export function AppProvider({ children }) {
     <AppContext.Provider value={{
       employees, teamMembers, sops, session, loading,
       isAdmin, currentEmployee,
-      addEmployee, updateEmployee, getByToken, getById,
+      addEmployee, updateEmployee, getByToken, getById, generateResetToken,
       updateTeamMember, deleteTeamMember,
       addSop, updateSop, deleteSop, fetchSops,
       employeeLogin, startOnboarding, logout,

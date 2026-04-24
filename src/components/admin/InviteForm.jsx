@@ -10,7 +10,7 @@ export default function InviteForm() {
 
   const [form, setForm] = useState({
     name: '', email: '', role: '', startDate: '',
-    managerName: 'Aksel',
+    managerName: 'Harish',
     personalMessage: '',
   })
   const [created, setCreated] = useState(null)
