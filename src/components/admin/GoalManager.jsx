@@ -87,9 +87,11 @@ export default function GoalManager() {
     }
   }
 
-  const handleDelete = async (id) => {
+  const handleDelete = async () => {
+    if (!editId) return
     if (!confirm('Delete this goal? This cannot be undone.')) return
-    await deleteGoal(id)
+    await deleteGoal(editId)
+    cancel()
   }
 
   const nonAdminEmployees = employees.filter(e => !e.isAdmin)
@@ -190,11 +192,20 @@ export default function GoalManager() {
               </div>
             )}
 
-            <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+            <div style={{ display: 'flex', gap: 10, marginTop: 4, alignItems: 'center' }}>
               <button type="submit" disabled={saving} style={{ ...btn('primary'), opacity: saving ? .6 : 1 }}>
                 {saving ? 'Saving…' : editId ? 'Save changes' : 'Create goal'}
               </button>
               <button type="button" onClick={cancel} style={btn('ghost')}>Cancel</button>
+              {editId && (
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  style={{ ...btn('ghost'), color: '#c0392b', borderColor: 'rgba(192,57,43,.3)', marginLeft: 'auto' }}
+                >
+                  Delete goal
+                </button>
+              )}
             </div>
           </form>
         </div>
@@ -232,8 +243,7 @@ export default function GoalManager() {
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-                  <button onClick={() => openEdit(goal)} style={{ ...btn('card'), padding: '7px 14px', fontSize: 13 }}>Edit</button>
-                  <button onClick={() => handleDelete(goal.id)} style={{ ...btn('ghost'), padding: '7px 14px', fontSize: 13, color: '#c0392b' }}>Delete</button>
+                  <button onClick={() => openEdit(goal)} style={{ ...btn('card'), padding: '7px 14px', fontSize: 13 }}>✏️ Edit</button>
                 </div>
               </div>
             )

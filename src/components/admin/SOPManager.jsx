@@ -54,9 +54,10 @@ export default function SOPManager() {
     }
   }
 
-  const remove = async (id) => {
-    if (!confirm('Delete this SOP?')) return
-    await deleteSop(id)
+  const handleDelete = async () => {
+    if (!confirm('Delete this SOP? This cannot be undone.')) return
+    await deleteSop(editing)
+    setEditing(null)
   }
 
   if (editing !== null) {
@@ -127,6 +128,19 @@ export default function SOPManager() {
             <button type="button" onClick={cancel} style={btn('ghost')}>Cancel</button>
           </div>
         </form>
+
+        {editing !== 'new' && (
+          <>
+            <div style={styles.divider} />
+            <div style={styles.dangerSection}>
+              <div style={styles.dangerLabel}>Danger zone</div>
+              <p style={styles.dangerDesc}>Permanently delete this SOP. This cannot be undone.</p>
+              <button onClick={handleDelete} style={{ ...btn('ghost'), color: '#c0392b', borderColor: 'rgba(192,57,43,.3)' }}>
+                Delete SOP
+              </button>
+            </div>
+          </>
+        )}
       </div>
     )
   }
@@ -151,8 +165,7 @@ export default function SOPManager() {
               </div>
               {s.videoUrl    && <span style={styles.tag}>▶ Video</span>}
               {s.documentUrl && <span style={styles.tag}>📄 Doc</span>}
-              <button onClick={() => openEdit(s)} style={{ ...btn('card'), padding: '7px 14px', fontSize: 13 }}>Edit</button>
-              <button onClick={() => remove(s.id)} style={{ ...btn('ghost'), padding: '7px 14px', fontSize: 13, color: '#c0392b' }}>Delete</button>
+              <button onClick={() => openEdit(s)} style={{ ...btn('card'), padding: '7px 14px', fontSize: 13 }}>✏️ Edit</button>
             </div>
           ))}
         </div>
@@ -194,4 +207,8 @@ const styles = {
   sopIcon:      { width: 40, height: 40, borderRadius: 10, background: T.dark, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 },
   tag:          { fontSize: 11, fontWeight: 600, background: 'rgba(55,74,62,.08)', color: T.heading, padding: '3px 10px', borderRadius: 100, opacity: .7 },
   empty:        { background: T.card, borderRadius: 14, padding: '32px', textAlign: 'center', color: T.text, opacity: .6 },
+  divider:      { maxWidth: 720, borderTop: '1.5px solid rgba(55,74,62,.08)', margin: '28px 0 0' },
+  dangerSection:{ maxWidth: 720, paddingTop: 20 },
+  dangerLabel:  { fontSize: 13, fontWeight: 700, color: '#c0392b', marginBottom: 4 },
+  dangerDesc:   { fontSize: 13, color: T.text, opacity: .6, marginBottom: 12 },
 }

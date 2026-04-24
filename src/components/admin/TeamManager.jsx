@@ -226,7 +226,7 @@ export default function TeamManager() {
               </div>
               {emp.isFounder && <span style={styles.founderBadge}>Founder</span>}
               {!emp.bio && <span style={styles.incompleteBadge}>Profile incomplete</span>}
-              <button onClick={() => openEdit(emp)} style={{ ...btn('card'), padding: '7px 14px', fontSize: 13 }}>Edit profile</button>
+              <button onClick={() => openEdit(emp)} style={{ ...btn('card'), padding: '7px 14px', fontSize: 13 }}>✏️ Edit profile</button>
             </div>
           ))}
         </div>
