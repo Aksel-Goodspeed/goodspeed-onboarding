@@ -36,7 +36,11 @@ export default function SOPs() {
         </button>
 
         <div style={styles.detailHeader}>
-          <div style={styles.detailIcon}>{selected.icon}</div>
+          <div style={styles.detailIcon}>
+            {selected.imageUrl
+              ? <img src={selected.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : <span>{selected.icon || '📋'}</span>}
+          </div>
           <div>
             <div style={styles.catTag}>{selected.category}</div>
             <h2 style={styles.detailTitle}>{selected.title}</h2>
@@ -80,6 +84,20 @@ export default function SOPs() {
                 </div>
               )}
             </div>
+          </div>
+        ) : selected.imageUrl ? (
+          <div style={styles.imageWrap}>
+            <img src={selected.imageUrl} alt={selected.title} style={styles.coverImg} />
+            {!isWatched && (
+              <div style={styles.imageCta}>
+                <button onClick={() => markWatched(selected)} style={{ ...btn('primary'), padding: '10px 22px', fontSize: 14 }}>
+                  Mark as watched
+                </button>
+              </div>
+            )}
+            {isWatched && (
+              <div style={styles.imageWatchedBadge}>✓ Watched</div>
+            )}
           </div>
         ) : (
           <div style={styles.videoPlayer}>
@@ -163,7 +181,11 @@ export default function SOPs() {
               className={`animate-cardIn delay-${(i % 4) + 1}`}
               style={{ ...styles.card, ...(done ? styles.cardDone : {}) }}>
               <div style={styles.cardTop}>
-                <div style={styles.sopIcon}>{sop.icon}</div>
+                <div style={styles.sopIcon}>
+                  {sop.imageUrl
+                    ? <img src={sop.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    : <span>{sop.icon || '📋'}</span>}
+                </div>
                 {done && <div style={styles.doneBadge}>✓ Watched</div>}
               </div>
               <div style={styles.sopCat}>{sop.category}</div>
@@ -193,7 +215,7 @@ const styles = {
   card:         { background: T.card, borderRadius: 16, padding: '22px', cursor: 'pointer', border: '2px solid transparent', transition: 'all .2s' },
   cardDone:     { borderColor: 'rgba(198,221,102,.4)' },
   cardTop:      { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 },
-  sopIcon:      { width: 44, height: 44, borderRadius: 12, background: T.dark, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 },
+  sopIcon:      { width: 44, height: 44, borderRadius: 12, background: T.dark, color: T.white, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, overflow: 'hidden' },
   doneBadge:    { fontSize: 11, fontWeight: 700, background: 'rgba(198,221,102,.2)', color: T.dark, padding: '3px 10px', borderRadius: 100 },
   sopCat:       { fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: T.text, opacity: .45, marginBottom: 6 },
   sopTitle:     { fontWeight: 700, fontSize: 16, color: T.heading, marginBottom: 8 },
@@ -202,11 +224,15 @@ const styles = {
   detailWrap:   { paddingBottom: 80 },
   backBtn:      { display: 'inline-flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: T.heading, opacity: .6, fontFamily: 'inherit', marginBottom: 24, padding: 0 },
   detailHeader: { display: 'flex', gap: 20, alignItems: 'flex-start', marginBottom: 28 },
-  detailIcon:   { width: 60, height: 60, borderRadius: 16, background: T.dark, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, flexShrink: 0 },
+  detailIcon:   { width: 60, height: 60, borderRadius: 16, background: T.dark, color: T.white, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, flexShrink: 0, overflow: 'hidden' },
   catTag:       { fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: T.accent, background: T.dark, padding: '3px 10px', borderRadius: 100, display: 'inline-block', marginBottom: 8 },
   detailTitle:  { fontFamily: "'Inter',sans-serif", fontSize: 26, fontWeight: 800, color: T.heading, marginBottom: 6 },
   detailDesc:   { fontSize: 15, color: T.text, opacity: .7 },
   videoWrap:    { borderRadius: 16, overflow: 'hidden', marginBottom: 16, aspectRatio: '16/9' },
+  imageWrap:    { position: 'relative', borderRadius: 16, overflow: 'hidden', marginBottom: 16, aspectRatio: '16/9', background: T.dark },
+  coverImg:     { width: '100%', height: '100%', objectFit: 'cover', display: 'block' },
+  imageCta:     { position: 'absolute', left: 0, right: 0, bottom: 16, display: 'flex', justifyContent: 'center' },
+  imageWatchedBadge: { position: 'absolute', top: 14, right: 14, fontSize: 12, fontWeight: 700, background: T.accent, color: T.dark, padding: '5px 12px', borderRadius: 100 },
   iframe:       { width: '100%', height: '100%', border: 'none', display: 'block' },
   videoPlayer:  { background: T.darkest, borderRadius: 16, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, overflow: 'hidden' },
   videoOverlay: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 },

@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useApp } from '../../context/AppContext'
+import SopImageUpload from '../shared/SopImageUpload'
 import { T, btn } from '../../styles/tokens'
 
 const BLANK = {
-  title: '', description: '', category: '', icon: '📋',
+  title: '', description: '', category: '', imageUrl: '',
   duration: '', owner: '', videoUrl: '', documentUrl: '',
   steps: [{ title: '', desc: '' }],
 }
@@ -18,7 +19,7 @@ export default function SOPManager() {
   const openEdit = (s) => {
     setForm({
       title: s.title, description: s.description, category: s.category,
-      icon: s.icon, duration: s.duration, owner: s.owner,
+      imageUrl: s.imageUrl || '', duration: s.duration, owner: s.owner,
       videoUrl: s.videoUrl || '', documentUrl: s.documentUrl || '',
       steps: s.steps?.length ? s.steps.map(st => ({ title: st.title, desc: st.desc })) : [{ title: '', desc: '' }],
     })
@@ -72,11 +73,16 @@ export default function SOPManager() {
             <Field label="Category *" required value={form.category} onChange={v => set('category', v)} placeholder="Client Relations" />
           </div>
           <div style={styles.row}>
-            <Field label="Icon (emoji)" value={form.icon} onChange={v => set('icon', v)} placeholder="📋" maxLength={4} />
             <Field label="Duration" value={form.duration} onChange={v => set('duration', v)} placeholder="12 min" />
-          </div>
-          <div style={styles.row}>
             <Field label="Owner" value={form.owner} onChange={v => set('owner', v)} placeholder="Harish" />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label style={{ fontSize: 13, fontWeight: 600, color: T.heading }}>Cover image</label>
+            <SopImageUpload
+              currentUrl={form.imageUrl}
+              sopId={editing !== 'new' ? editing : null}
+              onChange={url => set('imageUrl', url)}
+            />
           </div>
           <TextareaField label="Description" value={form.description} onChange={v => set('description', v)} rows={3} placeholder="Short description of what this SOP covers..." />
 
@@ -158,7 +164,11 @@ export default function SOPManager() {
         <div style={styles.list}>
           {sops.map(s => (
             <div key={s.id} style={styles.sopRow}>
-              <div style={styles.sopIcon}>{s.icon}</div>
+              <div style={styles.sopThumb}>
+                {s.imageUrl
+                  ? <img src={s.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : <span style={{ fontSize: 18 }}>{s.icon || '📋'}</span>}
+              </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 700, fontSize: 15, color: T.heading }}>{s.title}</div>
                 <div style={{ fontSize: 13, opacity: .55 }}>{s.category} · {s.duration} · {s.steps?.length || 0} steps</div>
@@ -205,6 +215,7 @@ const styles = {
   list:         { display: 'flex', flexDirection: 'column', gap: 8 },
   sopRow:       { display: 'flex', alignItems: 'center', gap: 14, background: T.card, borderRadius: 12, padding: '14px 16px' },
   sopIcon:      { width: 40, height: 40, borderRadius: 10, background: T.dark, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 },
+  sopThumb:     { width: 48, height: 48, borderRadius: 10, background: 'rgba(55,74,62,.08)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   tag:          { fontSize: 11, fontWeight: 600, background: 'rgba(55,74,62,.08)', color: T.heading, padding: '3px 10px', borderRadius: 100, opacity: .7 },
   empty:        { background: T.card, borderRadius: 14, padding: '32px', textAlign: 'center', color: T.text, opacity: .6 },
   divider:      { borderTop: '1.5px solid rgba(55,74,62,.08)', margin: '28px 0 0' },

@@ -78,6 +78,7 @@ function rowToSop(row) {
     description: row.description,
     category:    row.category,
     icon:        row.icon || '📋',
+    imageUrl:    row.image_url || '',
     videoUrl:    row.video_url || '',
     documentUrl: row.document_url || '',
     steps:       typeof row.steps === 'string' ? (() => { try { return JSON.parse(row.steps) } catch { return [] } })() : (row.steps || []),
@@ -93,6 +94,7 @@ function sopToRow(updates) {
   if ('description' in updates) row.description  = updates.description
   if ('category'    in updates) row.category     = updates.category
   if ('icon'        in updates) row.icon         = updates.icon
+  if ('imageUrl'    in updates) row.image_url    = updates.imageUrl || null
   if ('videoUrl'    in updates) row.video_url    = updates.videoUrl
   if ('documentUrl' in updates) row.document_url = updates.documentUrl
   if ('steps'       in updates) row.steps        = updates.steps
