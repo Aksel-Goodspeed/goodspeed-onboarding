@@ -5,6 +5,7 @@ import Logo from '../shared/Logo'
 import TeamManager from './TeamManager'
 import SOPManager from './SOPManager'
 import GoalManager from './GoalManager'
+import InviteForm from './InviteForm'
 import { T, btn } from '../../styles/tokens'
 
 const TABS = [
@@ -17,8 +18,9 @@ const TABS = [
 export default function AdminDashboard() {
   const { employees, logout } = useApp()
   const navigate = useNavigate()
-  const [copied, setCopied] = useState(null)
-  const [tab,    setTab]    = useState('employees')
+  const [copied,      setCopied]      = useState(null)
+  const [tab,         setTab]         = useState('employees')
+  const [showInvite,  setShowInvite]  = useState(false)
 
   // Admin accounts are not onboarding users — exclude them from the People view
   const people    = employees.filter(e => !e.isAdmin)
@@ -71,7 +73,13 @@ export default function AdminDashboard() {
         </div>
 
         {/* People tab */}
-        {tab === 'employees' && (
+        {tab === 'employees' && showInvite && (
+          <div className="animate-fadeUp">
+            <InviteForm onBack={() => setShowInvite(false)} />
+          </div>
+        )}
+
+        {tab === 'employees' && !showInvite && (
           <div className="animate-fadeUp">
             {/* Stats */}
             <div style={styles.statsRow}>
@@ -91,7 +99,7 @@ export default function AdminDashboard() {
             {/* Invite CTA */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '28px 0 16px' }}>
               <h2 style={{ fontSize: 18, fontWeight: 700, color: T.heading }}>Employees</h2>
-              <button onClick={() => navigate('/admin/invite')} style={btn('primary')}>
+              <button onClick={() => setShowInvite(true)} style={btn('primary')}>
                 + Invite employee
               </button>
             </div>

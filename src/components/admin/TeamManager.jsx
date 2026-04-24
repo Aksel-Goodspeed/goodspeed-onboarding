@@ -258,7 +258,7 @@ const styles = {
   sectionTitle:   { fontFamily: "'Inter',sans-serif", fontSize: 20, fontWeight: 700, color: T.heading, marginBottom: 20 },
   readOnly:       { fontSize: 13, color: T.text, opacity: .6, background: T.card, borderRadius: 10, padding: '10px 14px', marginBottom: 20 },
   readOnlyLabel:  { fontWeight: 700, opacity: .5, marginRight: 4 },
-  form:           { display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 680 },
+  form:           { display: 'flex', flexDirection: 'column', gap: 16 },
   row:            { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 },
   field:          { display: 'flex', flexDirection: 'column', gap: 6 },
   label:          { fontSize: 13, fontWeight: 600, color: T.heading },

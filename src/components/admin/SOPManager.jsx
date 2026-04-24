@@ -195,7 +195,7 @@ function TextareaField({ label, value, onChange, rows, placeholder }) {
 const styles = {
   backBtn:      { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: T.heading, opacity: .6, fontFamily: 'inherit', marginBottom: 20, padding: 0 },
   sectionTitle: { fontFamily: "'Inter',sans-serif", fontSize: 20, fontWeight: 700, color: T.heading, marginBottom: 20 },
-  form:         { display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 720 },
+  form:         { display: 'flex', flexDirection: 'column', gap: 16 },
   row:          { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 },
   fieldset:     { display: 'flex', flexDirection: 'column', gap: 12, background: T.card, borderRadius: 12, padding: '16px 18px' },
   fieldsetLabel:{ fontSize: 12, fontWeight: 700, color: T.heading, opacity: .5, textTransform: 'uppercase', letterSpacing: '.07em' },
@@ -207,8 +207,8 @@ const styles = {
   sopIcon:      { width: 40, height: 40, borderRadius: 10, background: T.dark, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 },
   tag:          { fontSize: 11, fontWeight: 600, background: 'rgba(55,74,62,.08)', color: T.heading, padding: '3px 10px', borderRadius: 100, opacity: .7 },
   empty:        { background: T.card, borderRadius: 14, padding: '32px', textAlign: 'center', color: T.text, opacity: .6 },
-  divider:      { maxWidth: 720, borderTop: '1.5px solid rgba(55,74,62,.08)', margin: '28px 0 0' },
-  dangerSection:{ maxWidth: 720, paddingTop: 20 },
+  divider:      { borderTop: '1.5px solid rgba(55,74,62,.08)', margin: '28px 0 0' },
+  dangerSection:{ paddingTop: 20 },
   dangerLabel:  { fontSize: 13, fontWeight: 700, color: '#c0392b', marginBottom: 4 },
   dangerDesc:   { fontSize: 13, color: T.text, opacity: .6, marginBottom: 12 },
 }
