@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../../context/AppContext'
 import RichTextEditor from '../shared/RichTextEditor'
+import EmojiPicker from '../shared/EmojiPicker'
 import { T, btn } from '../../styles/tokens'
 
 const ROLES = ['Developer', 'AI Developer', 'Designer', 'Operations']
@@ -126,14 +127,9 @@ export default function GoalManager() {
           </h3>
           <form onSubmit={handleSubmit} style={styles.form}>
             <div style={styles.titleRow}>
-              <div style={{ ...styles.field, flexShrink: 0 }}>
+              <div style={{ ...styles.field, flex: 'none' }}>
                 <label style={styles.label}>Icon</label>
-                <input
-                  value={form.icon}
-                  onChange={e => set('icon', e.target.value)}
-                  placeholder="🎯"
-                  style={{ width: 64 }}
-                />
+                <EmojiPicker value={form.icon} onChange={v => set('icon', v)} />
               </div>
               <div style={{ ...styles.field, flex: 1 }}>
                 <label style={styles.label}>Title *</label>
