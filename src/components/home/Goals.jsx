@@ -1,7 +1,45 @@
 import { useApp } from '../../context/AppContext'
 import { T } from '../../styles/tokens'
 
-const DUE_ORDER = ['30 days', '60 days', '90 days', 'Ongoing']
+const BUCKET_ORDER = ['overdue', 'soon', 'later', 'ongoing']
+const BUCKET_LABELS = {
+  overdue: 'Overdue',
+  soon:    'Due soon',
+  later:   'Later',
+  ongoing: 'Ongoing',
+}
+
+function endOfDay(dateStr) {
+  const d = new Date(dateStr + 'T23:59:59')
+  return isNaN(d) ? null : d
+}
+
+function daysUntil(dateStr) {
+  const due = endOfDay(dateStr)
+  if (!due) return null
+  const now = new Date()
+  return Math.ceil((due - now) / (1000 * 60 * 60 * 24))
+}
+
+function bucketFor(goal) {
+  if (!goal.dueDate) return 'ongoing'
+  const d = daysUntil(goal.dueDate)
+  if (d == null)     return 'ongoing'
+  if (d < 0)         return 'overdue'
+  if (d <= 7)        return 'soon'
+  return 'later'
+}
+
+function formatDue(goal) {
+  if (!goal.dueDate) return 'Ongoing'
+  const d = daysUntil(goal.dueDate)
+  if (d == null) return 'Ongoing'
+  if (d < 0)  return `Overdue by ${-d} day${-d === 1 ? '' : 's'}`
+  if (d === 0) return 'Due today'
+  if (d === 1) return 'Due tomorrow'
+  if (d <= 14) return `Due in ${d} days`
+  return new Date(goal.dueDate + 'T23:59:59').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+}
 
 export default function Goals() {
   const { currentEmployee, getGoalsForEmployee, toggleGoalComplete } = useApp()
@@ -12,17 +50,22 @@ export default function Goals() {
   const total = goals.length
   const progress = total > 0 ? Math.round((completedCount / total) * 100) : 0
 
-  // Group goals by dueLabel
-  const groups = DUE_ORDER.reduce((acc, label) => {
-    const items = goals.filter(g => g.dueLabel === label)
-    if (items.length > 0) acc.push({ label, items })
+  // Group goals by date proximity
+  const buckets = goals.reduce((acc, g) => {
+    const key = bucketFor(g)
+    ;(acc[key] = acc[key] || []).push(g)
     return acc
-  }, [])
+  }, {})
 
-  // Any goals with an unknown dueLabel
-  const knownLabels = new Set(DUE_ORDER)
-  const otherGoals = goals.filter(g => !knownLabels.has(g.dueLabel))
-  if (otherGoals.length > 0) groups.push({ label: 'Other', items: otherGoals })
+  // Sort each bucket by due date ascending (ongoing stays by order)
+  Object.keys(buckets).forEach(k => {
+    if (k === 'ongoing') return
+    buckets[k].sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+  })
+
+  const groups = BUCKET_ORDER
+    .filter(k => buckets[k] && buckets[k].length > 0)
+    .map(k => ({ label: BUCKET_LABELS[k], items: buckets[k], key: k }))
 
   return (
     <div className="animate-fadeUp">
@@ -57,10 +100,14 @@ export default function Goals() {
       </div>
 
       {/* Goal groups */}
-      {groups.map(({ label, items }) => (
+      {groups.map(({ label, items, key }) => (
         <div key={label} style={{ marginBottom: 28 }}>
           <div style={styles.groupHeader}>
-            <span style={styles.groupPill}>{label}</span>
+            <span style={{
+              ...styles.groupPill,
+              ...(key === 'overdue' ? { background: '#c0392b', color: '#fff' } : {}),
+              ...(key === 'soon'    ? { background: T.accent, color: T.dark } : {}),
+            }}>{label}</span>
           </div>
           <div style={styles.goalList}>
             {items.map(goal => {
@@ -81,11 +128,16 @@ export default function Goals() {
                         {goal.description}
                       </div>
                     )}
-                    {goal.type !== 'global' && (
-                      <span style={styles.typePill}>
-                        {goal.type === 'role' ? goal.role : 'Personal'}
-                      </span>
-                    )}
+                    <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
+                      {goal.type !== 'global' && (
+                        <span style={styles.typePill}>
+                          {goal.type === 'role' ? goal.role : 'Personal'}
+                        </span>
+                      )}
+                      {!isDone && (
+                        <span style={styles.typePill}>{formatDue(goal)}</span>
+                      )}
+                    </div>
                   </div>
                   <div style={{ ...styles.checkbox, ...(isDone ? styles.checkboxDone : {}) }}>
                     {isDone && <span style={{ fontSize: 14, lineHeight: 1 }}>✓</span>}

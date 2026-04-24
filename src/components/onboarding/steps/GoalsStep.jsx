@@ -50,15 +50,27 @@ export default function GoalsStep({ employee, onNext }) {
   const { getGoalsForEmployee } = useApp()
   const dbGoals = getGoalsForEmployee(employee)
 
-  // Only use DB goals from 30/60/90 day groups (exclude Ongoing for this step)
+  // Bucket DB goals into 30/60/90 day periods based on days from start date
   const periodLabels = ['30 days', '60 days', '90 days']
-  const dbPeriods = periodLabels.reduce((acc, label) => {
-    const items = dbGoals.filter(g => g.dueLabel === label)
-    if (items.length > 0) acc.push({ label, items })
-    return acc
-  }, [])
+  const startDate = employee?.startDate ? new Date(employee.startDate) : null
 
-  const useDynamic = dbPeriods.length > 0
+  const bucketGoal = (goal) => {
+    if (!goal.dueDate || !startDate) return null
+    const due = new Date(goal.dueDate + 'T23:59:59')
+    if (isNaN(due)) return null
+    const days = Math.ceil((due - startDate) / (1000 * 60 * 60 * 24))
+    if (days <= 30) return '30 days'
+    if (days <= 60) return '60 days'
+    return '90 days'
+  }
+
+  const byPeriod = { '30 days': [], '60 days': [], '90 days': [] }
+  dbGoals.forEach(g => {
+    const b = bucketGoal(g)
+    if (b) byPeriod[b].push(g)
+  })
+
+  const useDynamic = periodLabels.some(l => byPeriod[l].length > 0)
 
   if (useDynamic) {
     return (
@@ -71,7 +83,7 @@ export default function GoalsStep({ employee, onNext }) {
 
         <div style={styles.grid}>
           {periodLabels.map((label, i) => {
-            const items = dbGoals.filter(g => g.dueLabel === label)
+            const items = byPeriod[label]
             if (items.length === 0) return null
             const { bg, textColor } = PERIOD_STYLES[label] || PERIOD_STYLES['30 days']
             return (

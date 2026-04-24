@@ -3,7 +3,6 @@ import { useApp } from '../../context/AppContext'
 import { T, btn } from '../../styles/tokens'
 
 const ROLES = ['Developer', 'AI Developer', 'Designer', 'Operations']
-const DUE_LABELS = ['30 days', '60 days', '90 days', 'Ongoing']
 
 const EMPTY_FORM = {
   title:       '',
@@ -11,8 +10,15 @@ const EMPTY_FORM = {
   type:        'global',
   role:        '',
   employeeId:  '',
-  dueLabel:    '30 days',
+  dueDate:     '',
   icon:        '🎯',
+}
+
+function formatDueDate(dateStr) {
+  if (!dateStr) return 'Ongoing'
+  const d = new Date(dateStr + 'T23:59:59')
+  if (isNaN(d)) return 'Ongoing'
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 const typeBadge = (type) => {
@@ -46,7 +52,7 @@ export default function GoalManager() {
       type:        goal.type,
       role:        goal.role || '',
       employeeId:  goal.employeeId || '',
-      dueLabel:    goal.dueLabel,
+      dueDate:     goal.dueDate || '',
       icon:        goal.icon || '🎯',
     })
     setEditId(goal.id)
@@ -150,10 +156,15 @@ export default function GoalManager() {
                 </select>
               </div>
               <div style={styles.field}>
-                <label style={styles.label}>Due</label>
-                <select value={form.dueLabel} onChange={e => set('dueLabel', e.target.value)}>
-                  {DUE_LABELS.map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
+                <label style={styles.label}>Due date</label>
+                <input
+                  type="date"
+                  value={form.dueDate}
+                  onChange={e => set('dueDate', e.target.value)}
+                />
+                <span style={{ fontSize: 11, color: T.text, opacity: .5 }}>
+                  Leave blank for ongoing goals
+                </span>
               </div>
             </div>
 
@@ -217,7 +228,7 @@ export default function GoalManager() {
                     {goal.description && (
                       <span style={{ fontSize: 13, color: T.text, opacity: .6, flex: 1 }}>{goal.description}</span>
                     )}
-                    <span style={styles.dueTag}>{goal.dueLabel}</span>
+                    <span style={styles.dueTag}>{formatDueDate(goal.dueDate)}</span>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>

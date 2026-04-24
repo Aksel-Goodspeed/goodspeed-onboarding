@@ -112,6 +112,7 @@ function rowToGoal(row) {
     role:        row.role         || null,
     employeeId:  row.employee_id  || null,
     dueLabel:    row.due_label    || '30 days',
+    dueDate:     row.due_date     || null,
     icon:        row.icon         || '🎯',
     orderIndex:  row.order_index  || 0,
   }
@@ -125,6 +126,7 @@ function goalToRow(updates) {
   if ('role'        in updates) row.role         = updates.role
   if ('employeeId'  in updates) row.employee_id  = updates.employeeId
   if ('dueLabel'    in updates) row.due_label    = updates.dueLabel
+  if ('dueDate'     in updates) row.due_date     = updates.dueDate || null
   if ('icon'        in updates) row.icon         = updates.icon
   if ('orderIndex'  in updates) row.order_index  = updates.orderIndex
   return row

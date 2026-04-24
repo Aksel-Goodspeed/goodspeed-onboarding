@@ -61,7 +61,7 @@ export default function HomeDashboard() {
       </header>
 
       <main style={styles.main}>
-        {section === 'home'    && <HomeSection employee={currentEmployee} watchedCount={watchedCount} setSection={setSection} totalSops={sops.length} completedGoalCount={completedGoalCount} totalGoals={myGoals.length} />}
+        {section === 'home'    && <HomeSection employee={currentEmployee} watchedCount={watchedCount} setSection={setSection} totalSops={sops.length} completedGoalCount={completedGoalCount} totalGoals={myGoals.length} goals={myGoals} completedGoalIds={completedGoals} />}
         {section === 'team'    && <MeetTeam />}
         {section === 'sops'    && <SOPs />}
         {section === 'goals'   && <Goals />}
@@ -73,7 +73,23 @@ export default function HomeDashboard() {
   )
 }
 
-function HomeSection({ employee, watchedCount, setSection, totalSops, completedGoalCount, totalGoals }) {
+function formatDueRelative(dateStr) {
+  const due = new Date(dateStr + 'T23:59:59')
+  if (isNaN(due)) return ''
+  const days = Math.ceil((due - new Date()) / (1000 * 60 * 60 * 24))
+  if (days < 0)   return `Overdue by ${-days} day${-days === 1 ? '' : 's'}`
+  if (days === 0) return 'Due today'
+  if (days === 1) return 'Due tomorrow'
+  if (days <= 14) return `Due in ${days} days`
+  return due.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+}
+
+function HomeSection({ employee, watchedCount, setSection, totalSops, completedGoalCount, totalGoals, goals, completedGoalIds }) {
+  const upcoming = (goals || [])
+    .filter(g => g.dueDate && !completedGoalIds.includes(g.id))
+    .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+    .slice(0, 4)
+
   return (
     <div className="animate-fadeUp">
       <div style={styles.welcomeRow}>
@@ -139,6 +155,49 @@ function HomeSection({ employee, watchedCount, setSection, totalSops, completedG
         </div>
       </div>
 
+      {/* Upcoming goals */}
+      {upcoming.length > 0 && (
+        <div style={styles.upcomingSection}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+            <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 17, fontWeight: 700, color: T.heading }}>
+              Upcoming goals
+            </span>
+            <button onClick={() => setSection('goals')}
+              style={{ ...btn('ghost'), padding: '5px 12px', fontSize: 12 }}>
+              View all →
+            </button>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {upcoming.map(g => {
+              const days = Math.ceil((new Date(g.dueDate + 'T23:59:59') - new Date()) / (1000 * 60 * 60 * 24))
+              const isOverdue = days < 0
+              const isSoon = days >= 0 && days <= 7
+              return (
+                <div key={g.id} style={styles.upcomingRow} onClick={() => setSection('goals')}>
+                  <div style={styles.upcomingIcon}>{g.icon || '🎯'}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: T.heading }}>{g.title}</div>
+                    {g.description && (
+                      <div style={{ fontSize: 12, color: T.text, opacity: .55, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {g.description}
+                      </div>
+                    )}
+                  </div>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 100,
+                    background: isOverdue ? '#c0392b' : isSoon ? T.accent : 'rgba(55,74,62,.1)',
+                    color:      isOverdue ? '#fff'    : isSoon ? T.dark  : T.heading,
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {formatDueRelative(g.dueDate)}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Progress bar */}
       <div style={styles.progressSection}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -196,4 +255,7 @@ const styles = {
   cardSub:   { fontSize: 13, color: T.text, opacity: .55 },
   cardArrow: { position: 'absolute', top: 20, right: 20, fontSize: 18, color: T.text, opacity: .3 },
   progressSection: { background: T.card, borderRadius: 14, padding: '20px 24px' },
+  upcomingSection: { background: T.card, borderRadius: 14, padding: '20px 24px', marginBottom: 16 },
+  upcomingRow:     { display: 'flex', alignItems: 'center', gap: 12, background: T.bg, borderRadius: 10, padding: '10px 12px', cursor: 'pointer', transition: 'transform .15s' },
+  upcomingIcon:    { width: 32, height: 32, borderRadius: 8, background: T.card, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 },
 }
