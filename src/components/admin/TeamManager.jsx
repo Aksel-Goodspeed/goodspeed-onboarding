@@ -13,15 +13,19 @@ export default function TeamManager() {
 
   const openEdit = (emp) => {
     setForm({
-      initials:    emp.initials    || emp.name.slice(0, 2).toUpperCase(),
-      avatarColor: emp.avatarColor || '#374A3E',
-      avatarText:  emp.avatarText  || '#C6DD66',
-      bio:         emp.bio         || '',
-      funFacts:    [...(emp.funFacts || []), '', '', ''].slice(0, 3),
-      slack:       emp.slack       || '',
-      department:  emp.department  || '',
-      role:        emp.role        || '',
-      startDate:   emp.startDate   || '',
+      initials:       emp.initials       || emp.name.slice(0, 2).toUpperCase(),
+      avatarColor:    emp.avatarColor    || '#374A3E',
+      avatarText:     emp.avatarText     || '#C6DD66',
+      bio:            emp.bio            || '',
+      funFacts:       [...(emp.funFacts || []), '', '', ''].slice(0, 3),
+      slack:          emp.slack          || '',
+      department:     emp.department     || '',
+      role:           emp.role           || '',
+      startDate:      emp.startDate      || '',
+      location:       emp.location       || '',
+      locationLat:    emp.locationLat    ?? '',
+      locationLng:    emp.locationLng    ?? '',
+      profilePicture: emp.profilePicture || '',
     })
     setEditing(emp.id)
     setResetLink(null)
@@ -35,7 +39,12 @@ export default function TeamManager() {
   const save = async (e) => {
     e.preventDefault()
     setSaving(true)
-    const data = { ...form, funFacts: form.funFacts.filter(f => f.trim()) }
+    const data = {
+      ...form,
+      funFacts:    form.funFacts.filter(f => f.trim()),
+      locationLat: form.locationLat === '' ? null : form.locationLat,
+      locationLng: form.locationLng === '' ? null : form.locationLng,
+    }
     try {
       updateTeamMember(editing, data)
       setEditing(null)
@@ -88,7 +97,16 @@ export default function TeamManager() {
         </div>
         <form onSubmit={save} style={styles.form}>
           <div style={styles.row}>
-            <Field label="Role" value={form.role} onChange={v => set('role', v)} placeholder="Designer" />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+              <label style={{ fontSize: 13, fontWeight: 600, color: T.heading }}>Role</label>
+              <select value={form.role} onChange={e => set('role', e.target.value)}>
+                <option value="">Select a role…</option>
+                <option value="Developer">Developer</option>
+                <option value="AI Developer">AI Developer</option>
+                <option value="Designer">Designer</option>
+                <option value="Operations">Operations</option>
+              </select>
+            </div>
             <Field label="Department" value={form.department} onChange={v => set('department', v)} placeholder="Design" />
           </div>
           <div style={styles.row}>
@@ -120,6 +138,42 @@ export default function TeamManager() {
               <input key={i} value={f} onChange={e => setFact(i, e.target.value)} placeholder={`Fun fact ${i + 1}`} style={{ marginBottom: 6 }} />
             ))}
           </div>
+
+          {/* Location */}
+          <Field label="Location" value={form.location} onChange={v => set('location', v)} placeholder="Sydney, Australia" />
+          <div style={styles.row}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+              <label style={{ fontSize: 13, fontWeight: 600, color: T.heading }}>Latitude</label>
+              <input
+                type="number" step="any"
+                value={form.locationLat}
+                onChange={e => set('locationLat', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                placeholder="-33.8688"
+              />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+              <label style={{ fontSize: 13, fontWeight: 600, color: T.heading }}>Longitude</label>
+              <input
+                type="number" step="any"
+                value={form.locationLng}
+                onChange={e => set('locationLng', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                placeholder="151.2093"
+              />
+            </div>
+          </div>
+
+          {/* Profile picture */}
+          <Field label="Profile picture URL" value={form.profilePicture} onChange={v => set('profilePicture', v)} placeholder="https://..." />
+          {form.profilePicture && (
+            <div style={{ marginTop: -8 }}>
+              <img
+                src={form.profilePicture}
+                alt="Profile preview"
+                style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', border: `2px solid rgba(55,74,62,.15)` }}
+                onError={e => { e.target.style.display = 'none' }}
+              />
+            </div>
+          )}
 
           {/* Save / Cancel */}
           <div style={{ display: 'flex', gap: 10 }}>

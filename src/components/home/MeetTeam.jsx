@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import Globe from 'react-globe.gl'
 import { useApp } from '../../context/AppContext'
 import { T, btn } from '../../styles/tokens'
 
@@ -8,9 +9,43 @@ export default function MeetTeam() {
   const [factIdx,   setFactIdx]   = useState(0)
   const [revealed,  setRevealed]  = useState(false)
   const [dept,      setDept]      = useState('All')
+  const [countries, setCountries] = useState({ features: [] })
 
-  const depts = ['All', ...new Set(teamMembers.map(m => m.department))]
+  const globeEl      = useRef()
+  const containerRef = useRef()
+  const [containerWidth, setContainerWidth] = useState(800)
+
+  // Fetch GeoJSON countries
+  useEffect(() => {
+    fetch('https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson')
+      .then(r => r.json())
+      .then(setCountries)
+      .catch(() => {})
+  }, [])
+
+  // Measure container
+  useEffect(() => {
+    if (containerRef.current) setContainerWidth(containerRef.current.clientWidth)
+    const ro = new ResizeObserver(entries => {
+      for (const entry of entries) setContainerWidth(entry.contentRect.width)
+    })
+    if (containerRef.current) ro.observe(containerRef.current)
+    return () => ro.disconnect()
+  }, [])
+
+  // Configure globe controls after countries load (globe is ready by then)
+  useEffect(() => {
+    const g = globeEl.current
+    if (!g) return
+    g.controls().autoRotate = true
+    g.controls().autoRotateSpeed = 0.3
+    g.controls().enableZoom = false
+    g.pointOfView({ altitude: 2.2 })
+  }, [countries])
+
+  const depts = ['All', ...new Set(teamMembers.map(m => m.department).filter(Boolean))]
   const filtered = dept === 'All' ? teamMembers : teamMembers.filter(m => m.department === dept)
+  const membersWithLocation = teamMembers.filter(m => m.locationLat != null && m.locationLng != null)
 
   const select = (m) => {
     setSelected(m)
@@ -24,12 +59,51 @@ export default function MeetTeam() {
     setTimeout(() => setRevealed(true), 60)
   }
 
+  const globeHeight = Math.min(520, containerWidth * 0.65)
+
   return (
     <div style={styles.wrap}>
+      {/* Globe section */}
+      <div style={{ marginBottom: 12 }}>
+        <h2 style={styles.h2}>Where we are.</h2>
+      </div>
+      <div ref={containerRef} style={styles.globeWrap}>
+        {membersWithLocation.length === 0 && (
+          <div style={styles.globeHint}>
+            No locations set yet — add them in the admin Team tab
+          </div>
+        )}
+        <Globe
+          ref={globeEl}
+          width={containerWidth}
+          height={globeHeight}
+          backgroundColor="rgba(0,0,0,0)"
+          atmosphereColor="#C6DD66"
+          atmosphereAltitude={0.12}
+          globeImageUrl={null}
+          bumpImageUrl={null}
+          backgroundImageUrl={null}
+          polygonsData={countries.features}
+          polygonCapColor={() => '#374A3E'}
+          polygonSideColor={() => '#2A3B30'}
+          polygonStrokeColor={() => '#1F2E24'}
+          polygonAltitude={0.008}
+          pointsData={membersWithLocation}
+          pointLat={d => d.locationLat}
+          pointLng={d => d.locationLng}
+          pointColor={() => '#C6DD66'}
+          pointRadius={0.5}
+          pointAltitude={0.08}
+          pointLabel={d => `<div style="background:#374A3E;color:#FBFDFC;padding:7px 12px;border-radius:10px;font-size:13px;font-weight:700;pointer-events:none">${d.name}<br/><span style="font-weight:400;opacity:.65">${d.role}</span>${d.location ? `<br/><span style="opacity:.5;font-size:11px">${d.location}</span>` : ''}</div>`}
+          onPointClick={member => { select(member) }}
+        />
+      </div>
+
+      {/* Team cards section */}
       <div style={styles.headerRow}>
         <div>
           <h2 style={styles.h2}>Meet the team.</h2>
-          <p style={styles.sub}>5 people building the future of AI products.</p>
+          <p style={styles.sub}>The people building the future of AI products.</p>
         </div>
         {/* Department filter */}
         <div style={styles.filters}>
@@ -45,7 +119,7 @@ export default function MeetTeam() {
         </div>
       </div>
 
-      <div style={styles.layout}>
+      <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 380px' : '1fr', gap: 20 }}>
         {/* Cards grid */}
         <div style={styles.grid}>
           {filtered.map((m, i) => (
@@ -58,12 +132,20 @@ export default function MeetTeam() {
                 ...(selected?.id === m.id ? styles.cardActive : {}),
               }}
             >
-              <div style={{ ...styles.avatar, background: m.avatarColor, color: m.avatarText }}>
-                {m.initials}
-              </div>
+              {m.profilePicture ? (
+                <img
+                  src={m.profilePicture}
+                  alt={m.name}
+                  style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover', margin: '0 auto 10px', display: 'block' }}
+                />
+              ) : (
+                <div style={{ ...styles.avatar, background: m.avatarColor, color: m.avatarText }}>
+                  {m.initials}
+                </div>
+              )}
               <div style={styles.cardName}>{m.name}</div>
               <div style={styles.cardRole}>{m.role}</div>
-              <div style={styles.deptPill}>{m.department}</div>
+              {m.department && <div style={styles.deptPill}>{m.department}</div>}
             </div>
           ))}
         </div>
@@ -73,13 +155,26 @@ export default function MeetTeam() {
           <div style={styles.panel} className="animate-slideIn" key={selected.id}>
             {/* Header */}
             <div style={styles.panelHero}>
-              <div style={{ ...styles.bigAvatar, background: selected.avatarColor, color: selected.avatarText }}>
-                {selected.initials}
-              </div>
+              {selected.profilePicture ? (
+                <img
+                  src={selected.profilePicture}
+                  alt={selected.name}
+                  style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                />
+              ) : (
+                <div style={{ ...styles.bigAvatar, background: selected.avatarColor, color: selected.avatarText }}>
+                  {selected.initials}
+                </div>
+              )}
               <div style={{ flex: 1 }}>
                 <div style={styles.panelName}>{selected.name}</div>
                 {selected.isFounder && <div style={styles.founderBadge}>Founder</div>}
                 <div style={styles.panelRole}>{selected.role}</div>
+                {selected.location && (
+                  <div style={{ fontSize: 12, color: T.text, opacity: .5, marginTop: 2 }}>
+                    📍 {selected.location}
+                  </div>
+                )}
               </div>
               <button onClick={() => setSelected(null)} style={styles.closeBtn}>✕</button>
             </div>
@@ -87,46 +182,50 @@ export default function MeetTeam() {
             <p style={styles.bio}>{selected.bio}</p>
 
             {/* Slack */}
-            <a href={`slack://user?${selected.slack}`} style={styles.slackBtn}>
-              <SlackIcon /> {selected.slack}
-            </a>
+            {selected.slack && (
+              <a href={`slack://user?${selected.slack}`} style={styles.slackBtn}>
+                <SlackIcon /> {selected.slack}
+              </a>
+            )}
 
             {/* Fun facts */}
-            <div style={styles.factBox}>
-              <div style={styles.factHeader}>
-                <span>⭐ Fun fact</span>
-                <span style={{ fontSize: 12, opacity: .5 }}>
-                  {factIdx + 1} / {selected.funFacts.length}
-                </span>
-              </div>
-
-              {!revealed ? (
-                <button onClick={() => setRevealed(true)} style={styles.revealBtn}>
-                  Tap to reveal →
-                </button>
-              ) : (
-                <div className="animate-fadeUp">
-                  <p style={styles.factText}>"{selected.funFacts[factIdx]}"</p>
-                  {factIdx < selected.funFacts.length - 1 && (
-                    <button onClick={nextFact} style={{ ...btn('card'), padding: '7px 14px', fontSize: 13, marginTop: 12 }}>
-                      Next fact →
-                    </button>
-                  )}
+            {selected.funFacts && selected.funFacts.length > 0 && (
+              <div style={styles.factBox}>
+                <div style={styles.factHeader}>
+                  <span>⭐ Fun fact</span>
+                  <span style={{ fontSize: 12, opacity: .5 }}>
+                    {factIdx + 1} / {selected.funFacts.length}
+                  </span>
                 </div>
-              )}
 
-              {/* Dot indicators */}
-              <div style={{ display: 'flex', gap: 5, marginTop: 14 }}>
-                {selected.funFacts.map((_, i) => (
-                  <div key={i} style={{
-                    width: i <= factIdx && revealed ? 20 : 6,
-                    height: 6, borderRadius: 100,
-                    background: i <= factIdx && revealed ? T.accent : 'rgba(55,74,62,.2)',
-                    transition: 'all .3s',
-                  }} />
-                ))}
+                {!revealed ? (
+                  <button onClick={() => setRevealed(true)} style={styles.revealBtn}>
+                    Tap to reveal →
+                  </button>
+                ) : (
+                  <div className="animate-fadeUp">
+                    <p style={styles.factText}>"{selected.funFacts[factIdx]}"</p>
+                    {factIdx < selected.funFacts.length - 1 && (
+                      <button onClick={nextFact} style={{ ...btn('card'), padding: '7px 14px', fontSize: 13, marginTop: 12 }}>
+                        Next fact →
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Dot indicators */}
+                <div style={{ display: 'flex', gap: 5, marginTop: 14 }}>
+                  {selected.funFacts.map((_, i) => (
+                    <div key={i} style={{
+                      width: i <= factIdx && revealed ? 20 : 6,
+                      height: 6, borderRadius: 100,
+                      background: i <= factIdx && revealed ? T.accent : 'rgba(55,74,62,.2)',
+                      transition: 'all .3s',
+                    }} />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>
@@ -144,13 +243,21 @@ function SlackIcon() {
 
 const styles = {
   wrap:       { padding: '0 0 80px' },
+  globeWrap:  {
+    background: '#242F28', borderRadius: 20, overflow: 'hidden', marginBottom: 32,
+    position: 'relative',
+  },
+  globeHint:  {
+    position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+    color: 'rgba(251,253,252,.35)', fontSize: 13, fontWeight: 600, textAlign: 'center',
+    pointerEvents: 'none', zIndex: 1,
+  },
   headerRow:  { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 24, flexWrap: 'wrap', gap: 16 },
   h2:         { fontFamily: "'Inter',sans-serif", fontSize: 26, fontWeight: 800, color: T.heading, marginBottom: 4 },
   sub:        { fontSize: 14, color: T.text, opacity: .6 },
   filters:    { display: 'flex', gap: 7, flexWrap: 'wrap' },
   filterBtn:  { padding: '6px 14px', borderRadius: 100, border: `1.5px solid rgba(55,74,62,.18)`, background: 'transparent', color: T.heading, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' },
-  filterActive: { background: T.dark, color: T.white, border: `1.5px solid ${T.dark}` },
-  layout:   { display: 'grid', gridTemplateColumns: selected => selected ? '1fr 380px' : '1fr', gap: 20 },
+  filterActive: { background: T.dark, color: '#FBFDFC', border: `1.5px solid ${T.dark}` },
   grid:     { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12 },
   card: {
     background: T.card, borderRadius: 14, padding: '20px 14px',
@@ -186,6 +293,6 @@ const styles = {
   },
   factBox: { background: T.bg, borderRadius: 12, padding: '16px' },
   factHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, fontWeight: 700, color: T.heading, marginBottom: 12 },
-  revealBtn: { background: T.dark, color: T.white, border: 'none', cursor: 'pointer', padding: '9px 16px', borderRadius: 10, fontSize: 13, fontWeight: 600, fontFamily: 'inherit' },
+  revealBtn: { background: T.dark, color: '#FBFDFC', border: 'none', cursor: 'pointer', padding: '9px 16px', borderRadius: 10, fontSize: 13, fontWeight: 600, fontFamily: 'inherit' },
   factText: { fontSize: 14, lineHeight: 1.65, color: T.heading, fontStyle: 'italic', fontWeight: 500 },
 }

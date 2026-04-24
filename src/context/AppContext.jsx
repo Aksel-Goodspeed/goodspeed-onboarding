@@ -33,6 +33,12 @@ function rowToEmployee(row) {
     slack:              row.slack             || '',
     isFounder:          row.is_founder        || false,
     isAdmin:            row.is_admin          || false,
+    // location / profile fields
+    location:           row.location          || '',
+    locationLat:        row.location_lat      ?? null,
+    locationLng:        row.location_lng      ?? null,
+    profilePicture:     row.profile_picture   || '',
+    completedGoals:     row.completed_goals   || [],
   }
 }
 
@@ -56,6 +62,11 @@ function employeeToRow(updates) {
   if ('slack'              in updates) row.slack               = updates.slack
   if ('isFounder'          in updates) row.is_founder          = updates.isFounder
   if ('isAdmin'            in updates) row.is_admin            = updates.isAdmin
+  if ('location'           in updates) row.location            = updates.location
+  if ('locationLat'        in updates) row.location_lat        = updates.locationLat
+  if ('locationLng'        in updates) row.location_lng        = updates.locationLng
+  if ('profilePicture'     in updates) row.profile_picture     = updates.profilePicture
+  if ('completedGoals'     in updates) row.completed_goals     = updates.completedGoals
   return row
 }
 
@@ -91,6 +102,34 @@ function sopToRow(updates) {
   return row
 }
 
+function rowToGoal(row) {
+  if (!row) return null
+  return {
+    id:          row.id,
+    title:       row.title,
+    description: row.description || '',
+    type:        row.type,        // 'global' | 'role' | 'individual'
+    role:        row.role         || null,
+    employeeId:  row.employee_id  || null,
+    dueLabel:    row.due_label    || '30 days',
+    icon:        row.icon         || '🎯',
+    orderIndex:  row.order_index  || 0,
+  }
+}
+
+function goalToRow(updates) {
+  const row = {}
+  if ('title'       in updates) row.title        = updates.title
+  if ('description' in updates) row.description  = updates.description
+  if ('type'        in updates) row.type         = updates.type
+  if ('role'        in updates) row.role         = updates.role
+  if ('employeeId'  in updates) row.employee_id  = updates.employeeId
+  if ('dueLabel'    in updates) row.due_label    = updates.dueLabel
+  if ('icon'        in updates) row.icon         = updates.icon
+  if ('orderIndex'  in updates) row.order_index  = updates.orderIndex
+  return row
+}
+
 function genToken() { return Math.random().toString(36).slice(2, 12) }
 
 // ── provider ──────────────────────────────────────────────────────────────────
@@ -98,6 +137,7 @@ function genToken() { return Math.random().toString(36).slice(2, 12) }
 export function AppProvider({ children }) {
   const [employees,    setEmployees]    = useState([])
   const [sops,         setSops]         = useState([])
+  const [goals,        setGoals]        = useState([])
   const [loading,      setLoading]      = useState(true)
   const [session,      setSession]      = useState(() => {
     try { return JSON.parse(localStorage.getItem(SESSION_KEY)) } catch { return null }
@@ -109,7 +149,7 @@ export function AppProvider({ children }) {
   }, [session])
 
   useEffect(() => {
-    Promise.all([fetchEmployees(), fetchSops()])
+    Promise.all([fetchEmployees(), fetchSops(), fetchGoals()])
       .finally(() => setLoading(false))
   }, [])
 
@@ -175,10 +215,6 @@ export function AppProvider({ children }) {
 
   // ── team members (same objects as employees) ──────────────────────────────
 
-  // teamMembers is derived from employees — no separate table or state needed.
-  // updateTeamMember updates display fields on the employee record.
-  // deleteTeamMember removes the employee entirely.
-
   const updateTeamMember = (id, updates) => updateEmployee(id, updates)
 
   const deleteTeamMember = async (id) => {
@@ -218,6 +254,57 @@ export function AppProvider({ children }) {
     await supabase.from('sops').delete().eq('id', id)
   }
 
+  // ── Goals ──────────────────────────────────────────────────────────────────
+
+  const fetchGoals = async () => {
+    const { data, error } = await supabase
+      .from('goals').select('*').order('order_index', { ascending: true })
+    if (!error && data) setGoals(data.map(rowToGoal))
+  }
+
+  const addGoal = async (data) => {
+    const row = {
+      ...goalToRow(data),
+      order_index: goals.length + 1,
+    }
+    const { data: created, error } = await supabase
+      .from('goals').insert(row).select().single()
+    if (error) throw error
+    const goal = rowToGoal(created)
+    setGoals(prev => [...prev, goal])
+    return goal
+  }
+
+  const updateGoal = (id, updates) => {
+    setGoals(prev => prev.map(g => g.id === id ? { ...g, ...updates } : g))
+    supabase.from('goals').update(goalToRow(updates)).eq('id', id)
+      .then(({ error }) => { if (error) console.error('updateGoal failed:', error) })
+  }
+
+  const deleteGoal = async (id) => {
+    setGoals(prev => prev.filter(g => g.id !== id))
+    await supabase.from('goals').delete().eq('id', id)
+  }
+
+  const getGoalsForEmployee = (employee) => {
+    if (!employee) return []
+    return goals.filter(g =>
+      g.type === 'global' ||
+      (g.type === 'role' && g.role === employee.role) ||
+      (g.type === 'individual' && g.employeeId === employee.id)
+    )
+  }
+
+  const toggleGoalComplete = (employeeId, goalId) => {
+    const emp = employees.find(e => e.id === employeeId)
+    if (!emp) return
+    const completed = emp.completedGoals || []
+    const next = completed.includes(goalId)
+      ? completed.filter(id => id !== goalId)
+      : [...completed, goalId]
+    updateEmployee(employeeId, { completedGoals: next })
+  }
+
   // ── auth ───────────────────────────────────────────────────────────────────
 
   const employeeLogin = async (email, password) => {
@@ -247,16 +334,17 @@ export function AppProvider({ children }) {
 
   const isAdmin         = session?.type === 'admin'
   const currentEmployee = session?.type === 'employee' ? getById(session.employeeId) : null
-  // teamMembers is the same list as employees — one source of truth
   const teamMembers     = employees
 
   return (
     <AppContext.Provider value={{
-      employees, teamMembers, sops, session, loading,
+      employees, teamMembers, sops, goals, session, loading,
       isAdmin, currentEmployee,
       addEmployee, updateEmployee, getByToken, getById, generateResetToken,
       updateTeamMember, deleteTeamMember,
       addSop, updateSop, deleteSop, fetchSops,
+      addGoal, updateGoal, deleteGoal, fetchGoals,
+      getGoalsForEmployee, toggleGoalComplete,
       employeeLogin, startOnboarding, logout,
       fetchEmployees,
     }}>

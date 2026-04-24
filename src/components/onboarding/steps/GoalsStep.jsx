@@ -1,10 +1,11 @@
-import { T, eyebrow, h2Style, lead, btn } from '../../../styles/tokens'
+import { useApp } from '../../../context/AppContext'
+import { T, eyebrow, h2Style, lead } from '../../../styles/tokens'
 
-const goals = [
+const STATIC_GOALS = [
   {
-    period: '30 Days',
-    title:  'Get grounded.',
-    bg:     T.card,
+    period:    '30 days',
+    title:     'Get grounded.',
+    bg:        T.card,
     textColor: T.heading,
     items: [
       'Learn the tools and core workflows',
@@ -14,10 +15,10 @@ const goals = [
     ],
   },
   {
-    period: '60 Days',
-    title:  'Find your footing.',
-    bg:     T.dark,
-    textColor: T.white,
+    period:    '60 days',
+    title:     'Find your footing.',
+    bg:        T.dark,
+    textColor: '#FBFDFC',
     items: [
       'Own at least one deliverable end-to-end',
       'Contribute to a live client project',
@@ -26,20 +27,76 @@ const goals = [
     ],
   },
   {
-    period: '90 Days',
-    title:  'Take the lead.',
-    bg:     T.darkest,
-    textColor: T.white,
+    period:    '90 days',
+    title:     'Take the lead.',
+    bg:        T.darkest,
+    textColor: '#FBFDFC',
     items: [
       'Lead a feature from kickoff to ship',
-      'Build a go-to workflow that\'s yours',
+      "Build a go-to workflow that's yours",
       'Help onboard or mentor a newer team member',
       'Set your own next 90-day goals',
     ],
   },
 ]
 
-export default function GoalsStep({ onNext }) {
+const PERIOD_STYLES = {
+  '30 days': { bg: T.card,    textColor: T.heading  },
+  '60 days': { bg: T.dark,    textColor: '#FBFDFC'  },
+  '90 days': { bg: T.darkest, textColor: '#FBFDFC'  },
+}
+
+export default function GoalsStep({ employee, onNext }) {
+  const { getGoalsForEmployee } = useApp()
+  const dbGoals = getGoalsForEmployee(employee)
+
+  // Only use DB goals from 30/60/90 day groups (exclude Ongoing for this step)
+  const periodLabels = ['30 days', '60 days', '90 days']
+  const dbPeriods = periodLabels.reduce((acc, label) => {
+    const items = dbGoals.filter(g => g.dueLabel === label)
+    if (items.length > 0) acc.push({ label, items })
+    return acc
+  }, [])
+
+  const useDynamic = dbPeriods.length > 0
+
+  if (useDynamic) {
+    return (
+      <div style={{ maxWidth: 720 }}>
+        <div style={eyebrow}>The plan</div>
+        <h2 style={h2Style}>Your first 90 days.</h2>
+        <p style={{ ...lead, marginBottom: 28 }}>
+          Here's what success looks like early on. These are starting points — you'll shape them with your manager.
+        </p>
+
+        <div style={styles.grid}>
+          {periodLabels.map((label, i) => {
+            const items = dbGoals.filter(g => g.dueLabel === label)
+            if (items.length === 0) return null
+            const { bg, textColor } = PERIOD_STYLES[label] || PERIOD_STYLES['30 days']
+            return (
+              <div key={label} style={{ ...styles.card, background: bg }} className={`animate-cardIn delay-${i + 1}`}>
+                <div style={styles.pill}>{label}</div>
+                <div style={{ ...styles.title, color: textColor }}>
+                  {label === '30 days' ? 'Get grounded.' : label === '60 days' ? 'Find your footing.' : 'Take the lead.'}
+                </div>
+                <ul style={styles.list}>
+                  {items.map(item => (
+                    <li key={item.id} style={{ ...styles.item, color: textColor }}>
+                      <span style={styles.arrow}>→</span>
+                      <span>{item.title}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+
+  // Static fallback
   return (
     <div style={{ maxWidth: 720 }}>
       <div style={eyebrow}>The plan</div>
@@ -49,7 +106,7 @@ export default function GoalsStep({ onNext }) {
       </p>
 
       <div style={styles.grid}>
-        {goals.map((g, i) => (
+        {STATIC_GOALS.map((g, i) => (
           <div key={g.period} style={{ ...styles.card, background: g.bg }} className={`animate-cardIn delay-${i + 1}`}>
             <div style={styles.pill}>{g.period}</div>
             <div style={{ ...styles.title, color: g.textColor }}>{g.title}</div>
@@ -64,7 +121,6 @@ export default function GoalsStep({ onNext }) {
           </div>
         ))}
       </div>
-
     </div>
   )
 }

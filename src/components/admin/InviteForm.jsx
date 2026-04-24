@@ -115,7 +115,13 @@ export default function InviteForm() {
             <div style={styles.row}>
               <div style={styles.field}>
                 <label style={styles.label}>Role *</label>
-                <input required value={form.role} onChange={e => set('role', e.target.value)} placeholder="Product Designer" />
+                <select required value={form.role} onChange={e => set('role', e.target.value)}>
+                  <option value="">Select a role…</option>
+                  <option value="Developer">Developer</option>
+                  <option value="AI Developer">AI Developer</option>
+                  <option value="Designer">Designer</option>
+                  <option value="Operations">Operations</option>
+                </select>
               </div>
               <div style={styles.field}>
                 <label style={styles.label}>Start date</label>

@@ -4,12 +4,14 @@ import { useApp } from '../../context/AppContext'
 import Logo from '../shared/Logo'
 import TeamManager from './TeamManager'
 import SOPManager from './SOPManager'
+import GoalManager from './GoalManager'
 import { T, btn } from '../../styles/tokens'
 
 const TABS = [
   { id: 'employees', label: 'People'  },
   { id: 'team',      label: 'Team'    },
   { id: 'sops',      label: 'SOPs'    },
+  { id: 'goals',     label: 'Goals'   },
 ]
 
 export default function AdminDashboard() {
@@ -153,6 +155,13 @@ export default function AdminDashboard() {
         {tab === 'sops' && (
           <div className="animate-fadeUp">
             <SOPManager />
+          </div>
+        )}
+
+        {/* Goals tab */}
+        {tab === 'goals' && (
+          <div className="animate-fadeUp">
+            <GoalManager />
           </div>
         )}
       </main>

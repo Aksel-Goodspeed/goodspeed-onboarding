@@ -4,21 +4,26 @@ import { useApp } from '../../context/AppContext'
 import Logo from '../shared/Logo'
 import MeetTeam from './MeetTeam'
 import SOPs from './SOPs'
+import Goals from './Goals'
 import Chatbot from '../shared/Chatbot'
 import { T, btn } from '../../styles/tokens'
 
 const NAV = [
-  { id: 'home',   label: 'Home'        },
+  { id: 'home',   label: 'Home'          },
   { id: 'team',   label: 'Meet the Team' },
-  { id: 'sops',   label: 'SOPs'        },
+  { id: 'sops',   label: 'SOPs'          },
+  { id: 'goals',  label: 'My Goals'      },
 ]
 
 export default function HomeDashboard() {
-  const { currentEmployee, logout, sops } = useApp()
+  const { currentEmployee, logout, sops, getGoalsForEmployee } = useApp()
   const navigate = useNavigate()
   const [section, setSection] = useState('home')
 
   const watchedCount = currentEmployee?.watchedSOPs?.length || 0
+  const myGoals = getGoalsForEmployee(currentEmployee)
+  const completedGoals = (currentEmployee?.completedGoals || [])
+  const completedGoalCount = myGoals.filter(g => completedGoals.includes(g.id)).length
 
   const handleLogout = () => { logout(); navigate('/') }
 
@@ -50,9 +55,10 @@ export default function HomeDashboard() {
       </header>
 
       <main style={styles.main}>
-        {section === 'home' && <HomeSection employee={currentEmployee} watchedCount={watchedCount} setSection={setSection} totalSops={sops.length} />}
-        {section === 'team' && <MeetTeam />}
-        {section === 'sops' && <SOPs />}
+        {section === 'home'  && <HomeSection employee={currentEmployee} watchedCount={watchedCount} setSection={setSection} totalSops={sops.length} completedGoalCount={completedGoalCount} totalGoals={myGoals.length} />}
+        {section === 'team'  && <MeetTeam />}
+        {section === 'sops'  && <SOPs />}
+        {section === 'goals' && <Goals />}
       </main>
 
       <Chatbot employee={currentEmployee} />
@@ -60,7 +66,7 @@ export default function HomeDashboard() {
   )
 }
 
-function HomeSection({ employee, watchedCount, setSection, totalSops }) {
+function HomeSection({ employee, watchedCount, setSection, totalSops, completedGoalCount, totalGoals }) {
   return (
     <div className="animate-fadeUp">
       <div style={styles.welcomeRow}>
@@ -107,6 +113,22 @@ function HomeSection({ employee, watchedCount, setSection, totalSops }) {
           <div style={{ ...styles.cardLabel, color: T.white }}>Ask Goodie</div>
           <div style={{ ...styles.cardSub, color: 'rgba(251,253,252,.5)' }}>Your onboarding assistant</div>
           <div style={{ ...styles.cardArrow, color: T.accent }}>↓</div>
+        </div>
+
+        <div onClick={() => setSection('goals')} style={{ ...styles.accessCard, cursor: 'pointer' }}>
+          <div style={styles.cardIcon} className="animate-cardIn delay-3">🎯</div>
+          <div style={styles.cardLabel}>My Goals</div>
+          <div style={styles.cardSub}>
+            {completedGoalCount} of {totalGoals} complete
+          </div>
+          {totalGoals > 0 && (
+            <div style={{ marginTop: 10 }}>
+              <div style={{ height: 4, background: 'rgba(55,74,62,.12)', borderRadius: 2 }}>
+                <div style={{ height: '100%', width: `${Math.round((completedGoalCount / totalGoals) * 100)}%`, background: T.accent, borderRadius: 2, transition: 'width .5s' }} />
+              </div>
+            </div>
+          )}
+          <div style={styles.cardArrow}>→</div>
         </div>
       </div>
 
@@ -156,7 +178,7 @@ const styles = {
   h1:         { fontFamily: "'Inter',sans-serif", fontSize: 'clamp(24px,3.5vw,34px)', fontWeight: 800, color: T.heading, marginBottom: 6 },
   welcomeSub: { fontSize: 15, color: T.text, opacity: .6 },
   startBadge: { background: T.card, borderRadius: 12, padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 2, minWidth: 140 },
-  cards: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 32 },
+  cards: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14, marginBottom: 32 },
   accessCard: {
     background: T.card, borderRadius: 16, padding: '24px',
     cursor: 'default', transition: 'transform .2s, box-shadow .2s',
