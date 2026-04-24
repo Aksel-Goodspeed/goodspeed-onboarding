@@ -49,7 +49,7 @@ export default function InviteForm({ onBack }) {
           Share this link with <strong>{created.name}</strong>. They'll use it to set up their account and start onboarding.
         </p>
 
-        <div style={{ maxWidth: 680 }}>
+        <div>
           <div style={styles.resetBox}>
             <span style={styles.resetUrl}>{inviteUrl}</span>
             <button onClick={copyLink} style={{ ...btn('primary'), flexShrink: 0, padding: '6px 14px', fontSize: 13 }}>
@@ -140,7 +140,7 @@ export default function InviteForm({ onBack }) {
 const styles = {
   backBtn:      { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: T.heading, opacity: .6, fontFamily: 'inherit', marginBottom: 20, padding: 0 },
   sectionTitle: { fontFamily: "'Inter',sans-serif", fontSize: 20, fontWeight: 700, color: T.heading, marginBottom: 20 },
-  form:         { display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 680 },
+  form:         { display: 'flex', flexDirection: 'column', gap: 16 },
   row:          { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 },
   field:        { display: 'flex', flexDirection: 'column', gap: 6 },
   label:        { fontSize: 13, fontWeight: 600, color: T.heading },
