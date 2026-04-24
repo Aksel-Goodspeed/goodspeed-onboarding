@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../../context/AppContext'
 import AvatarUpload from '../shared/AvatarUpload'
+import LocationInput from '../shared/LocationInput'
 import { T, btn } from '../../styles/tokens'
 
 export default function EditProfile() {
@@ -34,9 +35,7 @@ export default function EditProfile() {
     setSaving(true)
     const data = {
       ...form,
-      locationLat: form.locationLat !== '' ? parseFloat(form.locationLat) : null,
-      locationLng: form.locationLng !== '' ? parseFloat(form.locationLng) : null,
-      funFacts:   form.funFacts.filter(f => f.trim()),
+      funFacts: form.funFacts.filter(f => f.trim()),
     }
     try {
       await updateEmployee(emp.id, data)
@@ -139,29 +138,14 @@ export default function EditProfile() {
         <div style={styles.sectionLabel}>Location</div>
         <p style={{ ...styles.hint, marginTop: -8 }}>Used to place you on the team globe.</p>
 
-        <Field label="City / Country" value={form.location} onChange={v => set('location', v)} placeholder="Sydney, Australia" />
-        <div style={styles.row}>
-          <div style={styles.field}>
-            <label style={styles.label}>Latitude</label>
-            <input
-              type="number"
-              step="any"
-              value={form.locationLat}
-              onChange={e => set('locationLat', e.target.value)}
-              placeholder="-33.8688"
-            />
-          </div>
-          <div style={styles.field}>
-            <label style={styles.label}>Longitude</label>
-            <input
-              type="number"
-              step="any"
-              value={form.locationLng}
-              onChange={e => set('locationLng', e.target.value)}
-              placeholder="151.2093"
-            />
-          </div>
-        </div>
+        <LocationInput
+          value={form.location}
+          lat={form.locationLat}
+          lng={form.locationLng}
+          onChange={({ location, locationLat, locationLng }) =>
+            setForm(f => ({ ...f, location, locationLat, locationLng }))
+          }
+        />
 
         {/* Save */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 8 }}>

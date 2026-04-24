@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../../context/AppContext'
 import AvatarUpload from '../shared/AvatarUpload'
+import LocationInput from '../shared/LocationInput'
 import { T, btn } from '../../styles/tokens'
 
 export default function TeamManager() {
@@ -141,27 +142,14 @@ export default function TeamManager() {
           </div>
 
           {/* Location */}
-          <Field label="Location" value={form.location} onChange={v => set('location', v)} placeholder="Sydney, Australia" />
-          <div style={styles.row}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
-              <label style={{ fontSize: 13, fontWeight: 600, color: T.heading }}>Latitude</label>
-              <input
-                type="number" step="any"
-                value={form.locationLat}
-                onChange={e => set('locationLat', e.target.value === '' ? '' : parseFloat(e.target.value))}
-                placeholder="-33.8688"
-              />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
-              <label style={{ fontSize: 13, fontWeight: 600, color: T.heading }}>Longitude</label>
-              <input
-                type="number" step="any"
-                value={form.locationLng}
-                onChange={e => set('locationLng', e.target.value === '' ? '' : parseFloat(e.target.value))}
-                placeholder="151.2093"
-              />
-            </div>
-          </div>
+          <LocationInput
+            value={form.location}
+            lat={form.locationLat}
+            lng={form.locationLng}
+            onChange={({ location, locationLat, locationLng }) =>
+              setForm(f => ({ ...f, location, locationLat, locationLng }))
+            }
+          />
 
           {/* Profile picture */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
