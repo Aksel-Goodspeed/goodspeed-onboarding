@@ -73,6 +73,13 @@ export default function HomeDashboard() {
   )
 }
 
+function stripHtml(html) {
+  if (!html) return ''
+  const tmp = document.createElement('div')
+  tmp.innerHTML = html
+  return (tmp.textContent || '').replace(/\s+/g, ' ').trim()
+}
+
 function formatDueRelative(dateStr) {
   const due = new Date(dateStr + 'T23:59:59')
   if (isNaN(due)) return ''
@@ -179,7 +186,7 @@ function HomeSection({ employee, watchedCount, setSection, totalSops, completedG
                     <div style={{ fontWeight: 700, fontSize: 14, color: T.heading }}>{g.title}</div>
                     {g.description && (
                       <div style={{ fontSize: 12, color: T.text, opacity: .55, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {g.description}
+                        {stripHtml(g.description)}
                       </div>
                     )}
                   </div>

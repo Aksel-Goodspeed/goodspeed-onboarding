@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useApp } from '../../context/AppContext'
+import RichTextEditor from '../shared/RichTextEditor'
 import { T, btn } from '../../styles/tokens'
 
 const ROLES = ['Developer', 'AI Developer', 'Designer', 'Operations']
@@ -12,6 +13,13 @@ const EMPTY_FORM = {
   employeeId:  '',
   dueDate:     '',
   icon:        '🎯',
+}
+
+function stripHtml(html) {
+  if (!html) return ''
+  const tmp = document.createElement('div')
+  tmp.innerHTML = html
+  return (tmp.textContent || '').replace(/\s+/g, ' ').trim()
 }
 
 function formatDueDate(dateStr) {
@@ -117,17 +125,16 @@ export default function GoalManager() {
             {editId ? 'Edit goal' : 'New goal'}
           </h3>
           <form onSubmit={handleSubmit} style={styles.form}>
-            <div style={styles.row}>
-              <div style={styles.field}>
+            <div style={styles.titleRow}>
+              <div style={{ ...styles.field, width: 80, flexShrink: 0 }}>
                 <label style={styles.label}>Icon</label>
                 <input
                   value={form.icon}
                   onChange={e => set('icon', e.target.value)}
                   placeholder="🎯"
-                  style={{ width: 64 }}
                 />
               </div>
-              <div style={{ ...styles.field, flex: 3 }}>
+              <div style={{ ...styles.field, flex: 1 }}>
                 <label style={styles.label}>Title *</label>
                 <input
                   required
@@ -140,11 +147,11 @@ export default function GoalManager() {
 
             <div style={styles.field}>
               <label style={styles.label}>Description</label>
-              <textarea
+              <RichTextEditor
                 value={form.description}
-                onChange={e => set('description', e.target.value)}
-                rows={3}
+                onChange={v => set('description', v)}
                 placeholder="What does completing this goal look like?"
+                minHeight={90}
               />
             </div>
 
@@ -237,7 +244,9 @@ export default function GoalManager() {
                   </div>
                   <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                     {goal.description && (
-                      <span style={{ fontSize: 13, color: T.text, opacity: .6, flex: 1 }}>{goal.description}</span>
+                      <span style={{ fontSize: 13, color: T.text, opacity: .6, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {stripHtml(goal.description)}
+                      </span>
                     )}
                     <span style={styles.dueTag}>{formatDueDate(goal.dueDate)}</span>
                   </div>
@@ -259,6 +268,7 @@ const styles = {
   formCard:     { background: T.card, borderRadius: 16, padding: '24px', marginBottom: 24 },
   form:         { display: 'flex', flexDirection: 'column', gap: 16 },
   row:          { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 },
+  titleRow:     { display: 'flex', gap: 16, alignItems: 'flex-end' },
   field:        { display: 'flex', flexDirection: 'column', gap: 6, flex: 1 },
   label:        { fontSize: 13, fontWeight: 600, color: T.heading },
   list:         { display: 'flex', flexDirection: 'column', gap: 8 },

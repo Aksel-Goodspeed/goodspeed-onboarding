@@ -69,6 +69,12 @@ export default function Goals() {
 
   return (
     <div className="animate-fadeUp">
+      <style>{`
+        .goal-desc ul, .goal-desc ol { margin: 4px 0 4px 20px; padding: 0; }
+        .goal-desc li { margin: 2px 0; }
+        .goal-desc a { color: #3869b3; text-decoration: underline; }
+        .goal-desc p { margin: 0 0 4px; }
+      `}</style>
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={styles.h1}>My Goals</h1>
@@ -124,9 +130,12 @@ export default function Goals() {
                       {goal.title}
                     </div>
                     {goal.description && (
-                      <div style={{ ...styles.goalDesc, ...(isDone ? { opacity: .35 } : {}) }}>
-                        {goal.description}
-                      </div>
+                      <div
+                        className="goal-desc"
+                        style={{ ...styles.goalDesc, ...(isDone ? { opacity: .35 } : {}) }}
+                        onClick={e => { if (e.target.tagName === 'A') e.stopPropagation() }}
+                        dangerouslySetInnerHTML={{ __html: goal.description }}
+                      />
                     )}
                     <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
                       {goal.type !== 'global' && (
