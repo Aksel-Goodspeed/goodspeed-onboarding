@@ -80,10 +80,9 @@ export default function MeetTeam() {
           backgroundColor="rgba(0,0,0,0)"
           atmosphereColor="#C6DD66"
           atmosphereAltitude={0.18}
-          globeImageUrl={null}
+          globeImageUrl="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2'%3E%3Crect width='2' height='2' fill='%23FFFFFF'/%3E%3C/svg%3E"
           bumpImageUrl={null}
           backgroundImageUrl={null}
-          globeMaterial={{ color: '#F9F2ED', shininess: 6 }}
           polygonsData={countries.features}
           polygonCapColor={() => '#374A3E'}
           polygonSideColor={() => '#2E3D33'}
@@ -92,9 +91,9 @@ export default function MeetTeam() {
           pointsData={membersWithLocation}
           pointLat={d => d.locationLat}
           pointLng={d => d.locationLng}
-          pointColor={() => '#374A3E'}
-          pointRadius={0.55}
-          pointAltitude={0.1}
+          pointColor={() => '#C6DD66'}
+          pointRadius={1.2}
+          pointAltitude={0.14}
           pointLabel={d => `<div style="background:#374A3E;color:#FBFDFC;padding:7px 12px;border-radius:10px;font-size:13px;font-weight:700;pointer-events:none">${d.name}<br/><span style="font-weight:400;opacity:.65">${d.role}</span>${d.location ? `<br/><span style="opacity:.5;font-size:11px">${d.location}</span>` : ''}</div>`}
           onPointClick={member => { select(member) }}
         />
