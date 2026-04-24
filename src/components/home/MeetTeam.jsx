@@ -79,21 +79,22 @@ export default function MeetTeam() {
           height={globeHeight}
           backgroundColor="rgba(0,0,0,0)"
           atmosphereColor="#C6DD66"
-          atmosphereAltitude={0.12}
+          atmosphereAltitude={0.18}
           globeImageUrl={null}
           bumpImageUrl={null}
           backgroundImageUrl={null}
+          globeMaterial={{ color: '#F9F2ED', shininess: 6 }}
           polygonsData={countries.features}
           polygonCapColor={() => '#374A3E'}
-          polygonSideColor={() => '#2A3B30'}
-          polygonStrokeColor={() => '#1F2E24'}
-          polygonAltitude={0.008}
+          polygonSideColor={() => '#2E3D33'}
+          polygonStrokeColor={() => '#C6DD66'}
+          polygonAltitude={0.012}
           pointsData={membersWithLocation}
           pointLat={d => d.locationLat}
           pointLng={d => d.locationLng}
-          pointColor={() => '#C6DD66'}
-          pointRadius={0.5}
-          pointAltitude={0.08}
+          pointColor={() => '#374A3E'}
+          pointRadius={0.55}
+          pointAltitude={0.1}
           pointLabel={d => `<div style="background:#374A3E;color:#FBFDFC;padding:7px 12px;border-radius:10px;font-size:13px;font-weight:700;pointer-events:none">${d.name}<br/><span style="font-weight:400;opacity:.65">${d.role}</span>${d.location ? `<br/><span style="opacity:.5;font-size:11px">${d.location}</span>` : ''}</div>`}
           onPointClick={member => { select(member) }}
         />
@@ -244,12 +245,12 @@ function SlackIcon() {
 const styles = {
   wrap:       { padding: '0 0 80px' },
   globeWrap:  {
-    background: '#242F28', borderRadius: 20, overflow: 'hidden', marginBottom: 32,
-    position: 'relative',
+    background: T.card, borderRadius: 20, overflow: 'hidden', marginBottom: 32,
+    position: 'relative', border: `1.5px solid rgba(55,74,62,.1)`,
   },
   globeHint:  {
     position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-    color: 'rgba(251,253,252,.35)', fontSize: 13, fontWeight: 600, textAlign: 'center',
+    color: 'rgba(55,74,62,.4)', fontSize: 13, fontWeight: 600, textAlign: 'center',
     pointerEvents: 'none', zIndex: 1,
   },
   headerRow:  { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 24, flexWrap: 'wrap', gap: 16 },

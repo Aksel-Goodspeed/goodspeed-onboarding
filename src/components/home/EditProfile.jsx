@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useApp } from '../../context/AppContext'
+import AvatarUpload from '../shared/AvatarUpload'
 import { T, btn } from '../../styles/tokens'
 
 export default function EditProfile() {
@@ -54,25 +55,18 @@ export default function EditProfile() {
         <p style={styles.sub}>How you appear to your teammates.</p>
       </div>
 
-      {/* Avatar preview card */}
+      {/* Preview strip */}
       <div style={styles.previewCard}>
-        <div style={styles.previewAvatar}>
-          {form.profilePicture ? (
-            <img
-              src={form.profilePicture}
-              alt={emp.name}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
-              onError={e => { e.currentTarget.style.display = 'none' }}
-            />
-          ) : (
-            <div style={{ ...styles.avatarCircle, background: form.avatarColor, color: form.avatarText }}>
-              {(form.initials || emp.name.slice(0, 2)).toUpperCase()}
-            </div>
-          )}
-        </div>
+        {form.profilePicture ? (
+          <img src={form.profilePicture} alt={emp.name} style={{ width: 52, height: 52, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+        ) : (
+          <div style={{ ...styles.avatarCircle, background: form.avatarColor, color: form.avatarText, width: 52, height: 52, fontSize: 18 }}>
+            {(form.initials || emp.name.slice(0, 2)).toUpperCase()}
+          </div>
+        )}
         <div>
           <div style={{ fontWeight: 700, fontSize: 17, color: T.heading }}>{emp.name}</div>
-          <div style={{ fontSize: 14, opacity: .55, marginTop: 2 }}>{form.role || emp.role}</div>
+          <div style={{ fontSize: 14, opacity: .55, marginTop: 2 }}>{emp.role}</div>
           {form.location && <div style={{ fontSize: 13, opacity: .45, marginTop: 2 }}>📍 {form.location}</div>}
         </div>
       </div>
@@ -130,21 +124,15 @@ export default function EditProfile() {
 
         {/* Profile picture */}
         <div style={styles.field}>
-          <label style={styles.label}>Profile picture URL</label>
-          <p style={styles.hint}>Paste a link to an image. This will replace your initials avatar.</p>
-          <input
-            value={form.profilePicture}
-            onChange={e => set('profilePicture', e.target.value)}
-            placeholder="https://example.com/photo.jpg"
+          <label style={styles.label}>Profile picture</label>
+          <AvatarUpload
+            currentUrl={form.profilePicture}
+            initials={form.initials || emp.name.slice(0, 2)}
+            avatarColor={form.avatarColor}
+            avatarText={form.avatarText}
+            employeeId={emp.id}
+            onChange={url => set('profilePicture', url)}
           />
-          {form.profilePicture && (
-            <img
-              src={form.profilePicture}
-              alt="Preview"
-              style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', marginTop: 10 }}
-              onError={e => { e.currentTarget.style.display = 'none' }}
-            />
-          )}
         </div>
 
         <div style={styles.divider} />

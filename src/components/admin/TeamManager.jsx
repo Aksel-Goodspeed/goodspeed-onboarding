@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useApp } from '../../context/AppContext'
+import AvatarUpload from '../shared/AvatarUpload'
 import { T, btn } from '../../styles/tokens'
 
 export default function TeamManager() {
@@ -163,17 +164,17 @@ export default function TeamManager() {
           </div>
 
           {/* Profile picture */}
-          <Field label="Profile picture URL" value={form.profilePicture} onChange={v => set('profilePicture', v)} placeholder="https://..." />
-          {form.profilePicture && (
-            <div style={{ marginTop: -8 }}>
-              <img
-                src={form.profilePicture}
-                alt="Profile preview"
-                style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', border: `2px solid rgba(55,74,62,.15)` }}
-                onError={e => { e.target.style.display = 'none' }}
-              />
-            </div>
-          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label style={{ fontSize: 13, fontWeight: 600, color: T.heading }}>Profile picture</label>
+            <AvatarUpload
+              currentUrl={form.profilePicture}
+              initials={form.initials || editingEmployee.name.slice(0, 2)}
+              avatarColor={form.avatarColor}
+              avatarText={form.avatarText}
+              employeeId={editingEmployee.id}
+              onChange={url => set('profilePicture', url)}
+            />
+          </div>
 
           {/* Save / Cancel */}
           <div style={{ display: 'flex', gap: 10 }}>
