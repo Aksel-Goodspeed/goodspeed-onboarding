@@ -126,12 +126,13 @@ export default function GoalManager() {
           </h3>
           <form onSubmit={handleSubmit} style={styles.form}>
             <div style={styles.titleRow}>
-              <div style={{ ...styles.field, width: 80, flexShrink: 0 }}>
+              <div style={{ ...styles.field, flexShrink: 0 }}>
                 <label style={styles.label}>Icon</label>
                 <input
                   value={form.icon}
                   onChange={e => set('icon', e.target.value)}
                   placeholder="🎯"
+                  style={{ width: 64 }}
                 />
               </div>
               <div style={{ ...styles.field, flex: 1 }}>
