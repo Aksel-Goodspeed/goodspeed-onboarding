@@ -35,8 +35,8 @@ function rowToEmployee(row) {
     isAdmin:            row.is_admin          || false,
     // location / profile fields
     location:           row.location          || '',
-    locationLat:        row.location_lat      ?? null,
-    locationLng:        row.location_lng      ?? null,
+    locationLat:        row.location_lat  != null ? parseFloat(row.location_lat)  : null,
+    locationLng:        row.location_lng  != null ? parseFloat(row.location_lng)  : null,
     profilePicture:     row.profile_picture   || '',
     completedGoals:     row.completed_goals   || [],
   }

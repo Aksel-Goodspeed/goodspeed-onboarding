@@ -70,7 +70,7 @@ export default function LocationInput({ value, lat, lng, onChange }) {
       </div>
       {status === 'found' && lat != null && (
         <span style={styles.coordHint}>
-          📍 {lat.toFixed(4)}, {lng.toFixed(4)}
+          📍 {parseFloat(lat).toFixed(4)}, {parseFloat(lng).toFixed(4)}
         </span>
       )}
       {status === 'notfound' && (
