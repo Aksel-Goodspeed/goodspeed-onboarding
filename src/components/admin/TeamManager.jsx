@@ -82,11 +82,6 @@ export default function TeamManager() {
     setEditing(null)
   }
 
-  const remove = async (id) => {
-    if (!confirm('Remove this employee? This will permanently delete their account.')) return
-    await deleteTeamMember(id)
-  }
-
   const editingEmployee = editing ? employees.find(e => e.id === editing) : null
 
   if (editing !== null && editingEmployee) {
@@ -232,7 +227,6 @@ export default function TeamManager() {
               {emp.isFounder && <span style={styles.founderBadge}>Founder</span>}
               {!emp.bio && <span style={styles.incompleteBadge}>Profile incomplete</span>}
               <button onClick={() => openEdit(emp)} style={{ ...btn('card'), padding: '7px 14px', fontSize: 13 }}>Edit profile</button>
-              <button onClick={() => remove(emp.id)} style={{ ...btn('ghost'), padding: '7px 14px', fontSize: 13, color: '#c0392b' }}>Remove</button>
             </div>
           ))}
         </div>
