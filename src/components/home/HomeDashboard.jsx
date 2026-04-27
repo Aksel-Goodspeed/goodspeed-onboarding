@@ -130,7 +130,7 @@ function HomeSection({ employee, watchedCount, setSection, totalSops, completedG
           <div style={styles.cardIcon} className="animate-cardIn delay-2">📋</div>
           <div style={styles.cardLabel}>SOPs</div>
           <div style={styles.cardSub}>
-            {watchedCount} of {totalSops} watched
+            {watchedCount} of {totalSops} viewed
           </div>
           <div style={{ marginTop: 10 }}>
             <div style={{ height: 4, background: 'rgba(55,74,62,.12)', borderRadius: 2 }}>
@@ -217,7 +217,7 @@ function HomeSection({ employee, watchedCount, setSection, totalSops, completedG
           <div style={{ height: '100%', width: '100%', background: T.accent, borderRadius: 3 }} />
         </div>
         <p style={{ fontSize: 13, opacity: .55, marginTop: 8 }}>
-          You finished onboarding on {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} · {totalSops - watchedCount > 0 ? `${totalSops - watchedCount} SOPs left to watch` : 'All SOPs watched 🎉'}
+          You finished onboarding on {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} · {totalSops - watchedCount > 0 ? `${totalSops - watchedCount} SOPs left to view` : 'All SOPs viewed 🎉'}
         </p>
       </div>
     </div>

@@ -187,7 +187,7 @@ const styles = {
   previewCard:  { display: 'flex', alignItems: 'center', gap: 16, background: T.card, borderRadius: 16, padding: '20px 24px', marginBottom: 32 },
   previewAvatar:{ width: 64, height: 64, borderRadius: '50%', flexShrink: 0, overflow: 'hidden' },
   avatarCircle: { width: 64, height: 64, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 22 },
-  form:         { display: 'flex', flexDirection: 'column', gap: 18, maxWidth: 680 },
+  form:         { display: 'flex', flexDirection: 'column', gap: 18, width: '100%' },
   row:          { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 },
   field:        { display: 'flex', flexDirection: 'column', gap: 6 },
   label:        { fontSize: 13, fontWeight: 600, color: T.heading },

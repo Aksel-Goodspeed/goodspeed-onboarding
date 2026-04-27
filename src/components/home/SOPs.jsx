@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useApp } from '../../context/AppContext'
 import { T, btn } from '../../styles/tokens'
 
@@ -8,30 +8,45 @@ function getYouTubeId(url) {
   return m ? m[1] : null
 }
 
+function truncate(text, max = 100) {
+  if (!text) return ''
+  if (text.length <= max) return text
+  return text.slice(0, max).trimEnd() + '…'
+}
+
 export default function SOPs() {
   const { sops, currentEmployee, updateEmployee } = useApp()
   const [selected, setSelected]  = useState(null)
-  const [watched,  setWatched]   = useState(false)
+  const [viewed,   setViewed]    = useState(false)
   const [cat,      setCat]       = useState('All')
+  const [lightbox, setLightbox]  = useState(null)
 
-  const cats       = ['All', ...new Set(sops.map(s => s.category))]
-  const filtered   = cat === 'All' ? sops : sops.filter(s => s.category === cat)
-  const watchedIds = currentEmployee?.watchedSOPs || []
+  const cats      = ['All', ...new Set(sops.map(s => s.category))]
+  const filtered  = cat === 'All' ? sops : sops.filter(s => s.category === cat)
+  const viewedIds = currentEmployee?.watchedSOPs || []
 
-  const markWatched = (sop) => {
-    setWatched(true)
-    if (!watchedIds.includes(sop.id)) {
-      updateEmployee(currentEmployee.id, { watchedSOPs: [...watchedIds, sop.id] })
+  // Esc closes lightbox
+  useEffect(() => {
+    if (!lightbox) return
+    const onKey = (e) => { if (e.key === 'Escape') setLightbox(null) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [lightbox])
+
+  const markViewed = (sop) => {
+    setViewed(true)
+    if (!viewedIds.includes(sop.id)) {
+      updateEmployee(currentEmployee.id, { watchedSOPs: [...viewedIds, sop.id] })
     }
   }
 
   if (selected) {
-    const isWatched = watched || watchedIds.includes(selected.id)
-    const ytId      = getYouTubeId(selected.videoUrl)
+    const isViewed = viewed || viewedIds.includes(selected.id)
+    const ytId     = getYouTubeId(selected.videoUrl)
 
     return (
       <div style={styles.detailWrap} className="animate-fadeUp">
-        <button onClick={() => { setSelected(null); setWatched(false) }} style={styles.backBtn}>
+        <button onClick={() => { setSelected(null); setViewed(false) }} style={styles.backBtn}>
           ← Back to SOPs
         </button>
 
@@ -44,11 +59,10 @@ export default function SOPs() {
           <div>
             <div style={styles.catTag}>{selected.category}</div>
             <h2 style={styles.detailTitle}>{selected.title}</h2>
-            <p style={styles.detailDesc}>{selected.description}</p>
           </div>
         </div>
 
-        {/* Video — YouTube embed, external link, or placeholder */}
+        {/* Media — YouTube embed, external video link, or image preview */}
         {ytId ? (
           <div style={styles.videoWrap}>
             <iframe
@@ -57,68 +71,34 @@ export default function SOPs() {
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
               title={selected.title}
-              onLoad={() => markWatched(selected)}
+              onLoad={() => markViewed(selected)}
             />
           </div>
         ) : selected.videoUrl ? (
           <div style={styles.videoPlayer}>
             <div style={styles.videoOverlay}>
-              {!isWatched ? (
-                <>
-                  <div style={styles.playBtn} onClick={() => markWatched(selected)}>
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill={T.dark}><path d="M8 5v14l11-7z"/></svg>
-                  </div>
-                  <div style={styles.videoTitle}>{selected.title}</div>
-                  <div style={styles.videoDuration}>⏱ {selected.duration} · {selected.owner}</div>
-                  <a href={selected.videoUrl} target="_blank" rel="noopener noreferrer"
-                    onClick={() => markWatched(selected)}
-                    style={{ ...btn('primary'), padding: '10px 22px', fontSize: 14, marginTop: 16, textDecoration: 'none' }}>
-                    ▶ Watch video
-                  </a>
-                </>
-              ) : (
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 36, marginBottom: 8 }}>✓</div>
-                  <div style={{ color: T.white, fontWeight: 700, fontSize: 16 }}>Watched!</div>
-                  <div style={{ color: 'rgba(255,255,255,.5)', fontSize: 13, marginTop: 4 }}>Scroll down to see the breakdown</div>
-                </div>
-              )}
+              <div style={styles.playBtn} onClick={() => markViewed(selected)}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill={T.dark}><path d="M8 5v14l11-7z"/></svg>
+              </div>
+              <div style={styles.videoTitle}>{selected.title}</div>
+              <div style={styles.videoDuration}>⏱ {selected.duration} · {selected.owner}</div>
+              <a href={selected.videoUrl} target="_blank" rel="noopener noreferrer"
+                onClick={() => markViewed(selected)}
+                style={{ ...btn('primary'), padding: '10px 22px', fontSize: 14, marginTop: 16, textDecoration: 'none' }}>
+                ▶ Watch video
+              </a>
             </div>
           </div>
         ) : selected.imageUrl ? (
-          <div style={styles.imageWrap}>
+          <div style={styles.imageWrap} onClick={() => setLightbox(selected.imageUrl)}>
             <img src={selected.imageUrl} alt={selected.title} style={styles.coverImg} />
-            {!isWatched && (
-              <div style={styles.imageCta}>
-                <button onClick={() => markWatched(selected)} style={{ ...btn('primary'), padding: '10px 22px', fontSize: 14 }}>
-                  Mark as watched
-                </button>
-              </div>
-            )}
-            {isWatched && (
-              <div style={styles.imageWatchedBadge}>✓ Watched</div>
-            )}
+            <div style={styles.imageHint}>🔍 Click to enlarge</div>
           </div>
-        ) : (
-          <div style={styles.videoPlayer}>
-            <div style={styles.videoOverlay}>
-              {!isWatched ? (
-                <>
-                  <div style={{ fontSize: 36, marginBottom: 8, opacity: .4 }}>🎬</div>
-                  <div style={{ color: 'rgba(255,255,255,.5)', fontSize: 14, marginBottom: 16 }}>No video attached yet</div>
-                  <button onClick={() => markWatched(selected)} style={{ ...btn('primary'), padding: '10px 22px', fontSize: 14 }}>
-                    Mark as watched
-                  </button>
-                </>
-              ) : (
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 36, marginBottom: 8 }}>✓</div>
-                  <div style={{ color: T.white, fontWeight: 700, fontSize: 16 }}>Watched!</div>
-                  <div style={{ color: 'rgba(255,255,255,.5)', fontSize: 13, marginTop: 4 }}>Scroll down to see the breakdown</div>
-                </div>
-              )}
-            </div>
-          </div>
+        ) : null}
+
+        {/* Description (below media) */}
+        {selected.description && (
+          <p style={styles.detailDesc}>{selected.description}</p>
         )}
 
         {/* SOP Document link */}
@@ -131,9 +111,9 @@ export default function SOPs() {
           </a>
         )}
 
-        {/* Step-by-step breakdown — revealed after watched */}
-        {isWatched && selected.steps?.length > 0 && (
-          <div style={styles.breakdown} className="animate-fadeUp">
+        {/* Step-by-step breakdown — always visible */}
+        {selected.steps?.length > 0 && (
+          <div style={styles.breakdown}>
             <h3 style={styles.breakdownTitle}>Step-by-step breakdown</h3>
             <div style={styles.steps}>
               {selected.steps.map((step, i) => (
@@ -146,10 +126,28 @@ export default function SOPs() {
                 </div>
               ))}
             </div>
-            <div style={styles.doneBar}>
-              <span style={{ fontWeight: 700, color: T.dark }}>✓ Process complete</span>
+          </div>
+        )}
+
+        {/* Mark as viewed — at the bottom, after the steps */}
+        <div style={styles.markBar}>
+          {isViewed ? (
+            <div style={styles.viewedNote}>
+              <span style={{ fontWeight: 700, color: T.dark }}>✓ Marked as viewed</span>
               <span style={{ fontSize: 13, opacity: .6 }}>You can come back to this anytime</span>
             </div>
+          ) : (
+            <button onClick={() => markViewed(selected)} style={{ ...btn('primary'), padding: '12px 26px', fontSize: 14 }}>
+              Mark as viewed
+            </button>
+          )}
+        </div>
+
+        {/* Lightbox */}
+        {lightbox && (
+          <div style={styles.lightbox} onClick={() => setLightbox(null)}>
+            <button onClick={() => setLightbox(null)} style={styles.lightboxClose} aria-label="Close">✕</button>
+            <img src={lightbox} alt="" style={styles.lightboxImg} onClick={e => e.stopPropagation()} />
           </div>
         )}
       </div>
@@ -161,7 +159,7 @@ export default function SOPs() {
       <div style={styles.listHeader}>
         <div>
           <h2 style={styles.h2}>Standard Operating Procedures</h2>
-          <p style={styles.sub}>{watchedIds.length} of {sops.length} watched</p>
+          <p style={styles.sub}>{viewedIds.length} of {sops.length} viewed</p>
         </div>
         <div style={styles.filters}>
           {cats.map(c => (
@@ -175,9 +173,9 @@ export default function SOPs() {
 
       <div style={styles.grid}>
         {filtered.map((sop, i) => {
-          const done = watchedIds.includes(sop.id)
+          const done = viewedIds.includes(sop.id)
           return (
-            <div key={sop.id} onClick={() => { setSelected(sop); setWatched(done) }}
+            <div key={sop.id} onClick={() => { setSelected(sop); setViewed(done) }}
               className={`animate-cardIn delay-${(i % 4) + 1}`}
               style={{ ...styles.card, ...(done ? styles.cardDone : {}) }}>
               <div style={styles.cardTop}>
@@ -186,11 +184,11 @@ export default function SOPs() {
                     ? <img src={sop.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     : <span>{sop.icon || '📋'}</span>}
                 </div>
-                {done && <div style={styles.doneBadge}>✓ Watched</div>}
+                {done && <div style={styles.doneBadge}>✓ Viewed</div>}
               </div>
               <div style={styles.sopCat}>{sop.category}</div>
               <div style={styles.sopTitle}>{sop.title}</div>
-              <p style={styles.sopDesc}>{sop.description}</p>
+              <p style={styles.sopDesc}>{truncate(sop.description, 100)}</p>
               <div style={styles.sopMeta}>
                 <span>⏱ {sop.duration}</span><span>·</span>
                 <span>{sop.steps?.length || 0} steps</span><span>·</span>
@@ -208,7 +206,7 @@ const styles = {
   listHeader:   { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 24, flexWrap: 'wrap', gap: 16 },
   h2:           { fontFamily: "'Inter',sans-serif", fontSize: 26, fontWeight: 800, color: T.heading, marginBottom: 4 },
   sub:          { fontSize: 14, color: T.text, opacity: .6 },
-  filters:      { display: 'flex', gap: 7 },
+  filters:      { display: 'flex', gap: 7, flexWrap: 'wrap' },
   filterBtn:    { padding: '6px 14px', borderRadius: 100, border: `1.5px solid rgba(55,74,62,.18)`, background: 'transparent', color: T.heading, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' },
   filterActive: { background: T.dark, color: T.white, border: `1.5px solid ${T.dark}` },
   grid:         { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 14 },
@@ -223,18 +221,25 @@ const styles = {
   sopMeta:      { display: 'flex', gap: 6, fontSize: 12, color: T.text, opacity: .45 },
   detailWrap:   { paddingBottom: 80 },
   backBtn:      { display: 'inline-flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: T.heading, opacity: .6, fontFamily: 'inherit', marginBottom: 24, padding: 0 },
-  detailHeader: { display: 'flex', gap: 20, alignItems: 'flex-start', marginBottom: 28 },
+  detailHeader: { display: 'flex', gap: 20, alignItems: 'flex-start', marginBottom: 20 },
   detailIcon:   { width: 60, height: 60, borderRadius: 16, background: T.dark, color: T.white, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, flexShrink: 0, overflow: 'hidden' },
   catTag:       { fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: T.accent, background: T.dark, padding: '3px 10px', borderRadius: 100, display: 'inline-block', marginBottom: 8 },
   detailTitle:  { fontFamily: "'Inter',sans-serif", fontSize: 26, fontWeight: 800, color: T.heading, marginBottom: 6 },
-  detailDesc:   { fontSize: 15, color: T.text, opacity: .7 },
-  videoWrap:    { borderRadius: 16, overflow: 'hidden', marginBottom: 16, aspectRatio: '16/9' },
-  imageWrap:    { position: 'relative', borderRadius: 16, overflow: 'hidden', marginBottom: 16, aspectRatio: '16/9', background: T.dark },
-  coverImg:     { width: '100%', height: '100%', objectFit: 'cover', display: 'block' },
-  imageCta:     { position: 'absolute', left: 0, right: 0, bottom: 16, display: 'flex', justifyContent: 'center' },
-  imageWatchedBadge: { position: 'absolute', top: 14, right: 14, fontSize: 12, fontWeight: 700, background: T.accent, color: T.dark, padding: '5px 12px', borderRadius: 100 },
+  detailDesc:   { fontSize: 15, color: T.text, opacity: .8, lineHeight: 1.65, marginBottom: 24 },
+  videoWrap:    { borderRadius: 16, overflow: 'hidden', marginBottom: 20, aspectRatio: '16/9' },
+  imageWrap:    {
+    position: 'relative', borderRadius: 16, overflow: 'hidden', marginBottom: 20,
+    background: T.card, cursor: 'zoom-in',
+    display: 'flex', justifyContent: 'center', alignItems: 'center',
+  },
+  coverImg:     { display: 'block', maxWidth: '100%', maxHeight: 560, width: 'auto', height: 'auto', objectFit: 'contain' },
+  imageHint:    {
+    position: 'absolute', bottom: 12, right: 12,
+    fontSize: 11, fontWeight: 700, background: 'rgba(36,47,40,.8)', color: T.white,
+    padding: '5px 10px', borderRadius: 100, pointerEvents: 'none',
+  },
   iframe:       { width: '100%', height: '100%', border: 'none', display: 'block' },
-  videoPlayer:  { background: T.darkest, borderRadius: 16, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, overflow: 'hidden' },
+  videoPlayer:  { background: T.darkest, borderRadius: 16, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, overflow: 'hidden' },
   videoOverlay: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 },
   playBtn:      { width: 64, height: 64, borderRadius: '50%', background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginBottom: 8 },
   videoTitle:   { color: T.white, fontWeight: 700, fontSize: 16 },
@@ -245,12 +250,34 @@ const styles = {
     borderRadius: 10, padding: '10px 18px', fontSize: 14, fontWeight: 600,
     textDecoration: 'none', transition: 'all .2s',
   },
-  breakdown:      {},
+  breakdown:      { marginBottom: 32 },
   breakdownTitle: { fontFamily: "'Inter',sans-serif", fontSize: 20, fontWeight: 700, color: T.heading, marginBottom: 20 },
-  steps:          { display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 },
+  steps:          { display: 'flex', flexDirection: 'column', gap: 12 },
   step:           { display: 'flex', gap: 16, alignItems: 'flex-start', background: T.card, borderRadius: 14, padding: '18px 20px' },
   stepNum:        { width: 32, height: 32, borderRadius: '50%', background: T.dark, color: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14, flexShrink: 0 },
   stepTitle:      { fontWeight: 700, fontSize: 15, color: T.heading, marginBottom: 5 },
   stepDesc:       { fontSize: 13, lineHeight: 1.6, color: T.text, opacity: .75 },
-  doneBar:        { background: 'rgba(198,221,102,.15)', borderRadius: 12, padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  markBar:        {
+    background: 'rgba(198,221,102,.15)', borderRadius: 12, padding: '18px 22px',
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12,
+  },
+  viewedNote:     { display: 'flex', flexDirection: 'column', gap: 2 },
+  lightbox: {
+    position: 'fixed', inset: 0, zIndex: 1000,
+    background: 'rgba(20,28,23,.92)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    padding: 32, cursor: 'zoom-out',
+  },
+  lightboxImg: {
+    maxWidth: '100%', maxHeight: '100%',
+    borderRadius: 12, boxShadow: '0 30px 60px rgba(0,0,0,.5)',
+    cursor: 'default',
+  },
+  lightboxClose: {
+    position: 'absolute', top: 20, right: 20,
+    width: 40, height: 40, borderRadius: '50%',
+    background: 'rgba(255,255,255,.12)', color: T.white,
+    border: 'none', cursor: 'pointer', fontSize: 18,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  },
 }
