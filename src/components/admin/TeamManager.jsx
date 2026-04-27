@@ -99,13 +99,20 @@ export default function TeamManager() {
           <div style={styles.row}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
               <label style={{ fontSize: 13, fontWeight: 600, color: T.heading }}>Role</label>
-              <select value={form.role} onChange={e => set('role', e.target.value)}>
-                <option value="">Select a role…</option>
-                <option value="Developer">Developer</option>
-                <option value="AI Developer">AI Developer</option>
-                <option value="Designer">Designer</option>
-                <option value="Operations">Operations</option>
-              </select>
+              {editingEmployee.isFounder ? (
+                <div style={styles.lockedField} title="The Founder role is reserved for the company founder and cannot be changed.">
+                  <span>Founder</span>
+                  <span style={styles.lockedHint}>🔒 Reserved</span>
+                </div>
+              ) : (
+                <select value={form.role} onChange={e => set('role', e.target.value)}>
+                  <option value="">Select a role…</option>
+                  <option value="Developer">Developer</option>
+                  <option value="AI Developer">AI Developer</option>
+                  <option value="Designer">Designer</option>
+                  <option value="Operations">Operations</option>
+                </select>
+              )}
             </div>
             <Field label="Department" value={form.department} onChange={v => set('department', v)} placeholder="Design" />
           </div>
@@ -352,6 +359,8 @@ const styles = {
   chip:           { padding: '5px 12px', borderRadius: 100, border: `1.5px solid rgba(55,74,62,.16)`, background: 'transparent', color: T.heading, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' },
   chipActive:     { background: T.dark, color: T.accent, border: `1.5px solid ${T.dark}` },
   resultCount:    { fontSize: 12, color: T.text, opacity: .5, fontWeight: 600 },
+  lockedField:    { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '10px 14px', borderRadius: 10, background: 'rgba(55,74,62,.06)', border: `1.5px solid rgba(55,74,62,.12)`, fontSize: 14, fontWeight: 600, color: T.heading, cursor: 'not-allowed' },
+  lockedHint:     { fontSize: 11, fontWeight: 600, color: T.text, opacity: .55 },
   divider:        { maxWidth: 680, borderTop: '1.5px solid rgba(55,74,62,.08)', margin: '28px 0 0' },
   utilSection:    { maxWidth: 680, paddingTop: 20, paddingBottom: 4 },
   utilLabel:      { fontSize: 13, fontWeight: 700, color: T.heading, marginBottom: 4 },
