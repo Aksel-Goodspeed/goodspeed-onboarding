@@ -105,6 +105,7 @@ export default function TeamManager() {
                 <option value="AI Developer">AI Developer</option>
                 <option value="Designer">Designer</option>
                 <option value="Operations">Operations</option>
+                <option value="Operations">Founder</option>
               </select>
             </div>
             <Field label="Department" value={form.department} onChange={v => set('department', v)} placeholder="Design" />
