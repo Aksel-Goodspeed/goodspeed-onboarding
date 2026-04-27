@@ -197,15 +197,19 @@ export default function TeamManager() {
           )}
         </div>
 
-        {/* Danger zone */}
-        <div style={styles.divider} />
-        <div style={styles.utilSection}>
-          <div style={{ ...styles.utilLabel, color: '#c0392b' }}>Danger zone</div>
-          <p style={styles.utilDesc}>Permanently delete {editingEmployee.name}'s account. This cannot be undone.</p>
-          <button onClick={handleDelete} style={{ ...btn('ghost'), color: '#c0392b', borderColor: 'rgba(192,57,43,.3)' }}>
-            Delete account
-          </button>
-        </div>
+        {/* Danger zone — hidden for the founder account */}
+        {!editingEmployee.isFounder && (
+          <>
+            <div style={styles.divider} />
+            <div style={styles.utilSection}>
+              <div style={{ ...styles.utilLabel, color: '#c0392b' }}>Danger zone</div>
+              <p style={styles.utilDesc}>Permanently delete {editingEmployee.name}'s account. This cannot be undone.</p>
+              <button onClick={handleDelete} style={{ ...btn('ghost'), color: '#c0392b', borderColor: 'rgba(192,57,43,.3)' }}>
+                Delete account
+              </button>
+            </div>
+          </>
+        )}
       </div>
     )
   }
