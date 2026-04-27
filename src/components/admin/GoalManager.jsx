@@ -227,8 +227,8 @@ export default function GoalManager() {
             return (
               <div key={goal.id} style={styles.goalRow}>
                 <div style={styles.goalIcon}>{goal.icon || '🎯'}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3, flexWrap: 'wrap' }}>
                     <span style={{ fontWeight: 700, fontSize: 15, color: T.heading }}>{goal.title}</span>
                     <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 100, background: badge.bg, color: badge.color }}>
                       {badge.label}
@@ -239,9 +239,9 @@ export default function GoalManager() {
                       </span>
                     )}
                   </div>
-                  <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'center', minWidth: 0 }}>
                     {goal.description && (
-                      <span style={{ fontSize: 13, color: T.text, opacity: .6, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <span style={{ fontSize: 13, color: T.text, opacity: .6, flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {stripHtml(goal.description)}
                       </span>
                     )}
