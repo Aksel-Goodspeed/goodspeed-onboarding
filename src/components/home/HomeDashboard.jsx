@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useApp } from '../../context/AppContext'
 import Logo from '../shared/Logo'
 import MeetTeam from './MeetTeam'
@@ -16,11 +15,14 @@ const NAV = [
   { id: 'goals',   label: 'My Goals'      },
   { id: 'profile', label: 'My Profile'    },
 ]
+const VALID_SECTIONS = NAV.map(n => n.id)
 
 export default function HomeDashboard() {
   const { currentEmployee, logout, sops, getGoalsForEmployee } = useApp()
   const navigate = useNavigate()
-  const [section, setSection] = useState('home')
+  const { section: sectionParam } = useParams()
+  const section = VALID_SECTIONS.includes(sectionParam) ? sectionParam : 'home'
+  const setSection = (id) => navigate(id === 'home' ? '/home' : `/home/${id}`)
 
   const watchedCount = currentEmployee?.watchedSOPs?.length || 0
   const myGoals = getGoalsForEmployee(currentEmployee)

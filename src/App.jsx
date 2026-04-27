@@ -20,9 +20,11 @@ function AppRoutes() {
     <Routes>
       <Route path="/"               element={<Landing />} />
       <Route path="/admin"          element={<AuthGuard require="admin"><AdminDashboard /></AuthGuard>} />
+      <Route path="/admin/:tab"     element={<AuthGuard require="admin"><AdminDashboard /></AuthGuard>} />
       <Route path="/join/:token"    element={<OnboardingFlow />} />
       <Route path="/reset/:token"   element={<PasswordReset />} />
       <Route path="/home"           element={<AuthGuard require="employee"><HomeDashboard /></AuthGuard>} />
+      <Route path="/home/:section"  element={<AuthGuard require="employee"><HomeDashboard /></AuthGuard>} />
       <Route path="*"               element={<Navigate to="/" replace />} />
     </Routes>
   )

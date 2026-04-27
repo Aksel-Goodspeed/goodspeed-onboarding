@@ -1,6 +1,8 @@
 import { useApp } from '../../../context/AppContext'
 import { T, btn } from '../../../styles/tokens'
 
+const SLACK_URL = 'https://goodspeedstudio.slack.com'
+
 export default function CompleteStep({ employee, navigate }) {
   const { updateEmployee } = useApp()
 
@@ -9,8 +11,13 @@ export default function CompleteStep({ employee, navigate }) {
     navigate('/home')
   }
 
+  const goTo = (path) => {
+    updateEmployee(employee.id, { onboardingComplete: true })
+    navigate(path)
+  }
+
   return (
-    <div style={{ maxWidth: 540, textAlign: 'center', margin: '0 auto' }}>
+    <div style={{ width: '100%', maxWidth: 540, textAlign: 'center', margin: '0 auto' }}>
       <div style={styles.badge} className="animate-pulse">✓</div>
 
       <h2 style={styles.heading}>
@@ -24,15 +31,15 @@ export default function CompleteStep({ employee, navigate }) {
       </p>
 
       <div style={styles.links}>
-        <a href="#" style={styles.link}>
+        <a href={SLACK_URL} target="_blank" rel="noopener noreferrer" style={styles.link}>
           <SlackIcon /> Open Slack
         </a>
-        <a href="#" style={styles.link}>
-          📋 Team wiki
-        </a>
-        <a href="#" style={styles.link}>
-          🎯 Linear tasks
-        </a>
+        <button type="button" onClick={() => goTo('/home/sops')} style={styles.link}>
+          📋 SOPs
+        </button>
+        <button type="button" onClick={() => goTo('/home/goals')} style={styles.link}>
+          🎯 Goals
+        </button>
       </div>
 
       <button onClick={finish} style={{ ...btn('primary'), marginTop: 32, padding: '15px 36px', fontSize: 16 }}>
@@ -69,6 +76,7 @@ const styles = {
     padding: '9px 18px', borderRadius: 100,
     background: T.card, color: T.heading,
     fontSize: 14, fontWeight: 600, textDecoration: 'none',
+    border: 'none', cursor: 'pointer', fontFamily: 'inherit',
     transition: 'all .2s',
   },
 }

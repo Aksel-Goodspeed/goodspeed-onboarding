@@ -8,7 +8,7 @@ export default function ManagerStep({ employee }) {
   ) || teamMembers[0] || {}
 
   return (
-    <div style={{ maxWidth: 620 }}>
+    <div style={{ width: '100%', maxWidth: 620 }}>
       <div style={eyebrow}>A message for you</div>
       <h2 style={h2Style}>From {manager.name}.</h2>
 
@@ -18,9 +18,14 @@ export default function ManagerStep({ employee }) {
           <div style={styles.quoteIcon}>"</div>
           <p style={styles.msgText}>{employee.personalMessage}</p>
           <div style={styles.msgAuthor}>
-            <div style={{ ...styles.avatar, background: manager.avatarColor, color: manager.avatarText }}>
-              {manager.initials}
-            </div>
+            {manager.profilePicture ? (
+              <img src={manager.profilePicture} alt={manager.name}
+                style={{ ...styles.avatar, objectFit: 'cover' }} />
+            ) : (
+              <div style={{ ...styles.avatar, background: manager.avatarColor, color: manager.avatarText }}>
+                {manager.initials}
+              </div>
+            )}
             <div>
               <div style={{ fontWeight: 700, fontSize: 14, color: T.white }}>{manager.name}</div>
               <div style={{ fontSize: 12, opacity: .6, color: T.white }}>{manager.role}</div>
@@ -31,9 +36,14 @@ export default function ManagerStep({ employee }) {
 
       {/* Manager intro card */}
       <div style={styles.managerCard} className="animate-cardIn">
-        <div style={{ ...styles.bigAvatar, background: manager.avatarColor, color: manager.avatarText }}>
-          {manager.initials}
-        </div>
+        {manager.profilePicture ? (
+          <img src={manager.profilePicture} alt={manager.name}
+            style={{ ...styles.bigAvatar, objectFit: 'cover' }} />
+        ) : (
+          <div style={{ ...styles.bigAvatar, background: manager.avatarColor, color: manager.avatarText }}>
+            {manager.initials}
+          </div>
+        )}
         <div style={{ flex: 1 }}>
           <div style={styles.managerName}>{manager.name}</div>
           <div style={styles.managerRole}>{manager.role} · {manager.department}</div>

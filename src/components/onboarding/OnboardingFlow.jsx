@@ -101,7 +101,7 @@ export default function OnboardingFlow() {
 
       {/* Step content */}
       <main style={styles.main}>
-        <div key={animKey} className="animate-fadeUp" style={{ width: '100%', maxWidth: 800 }}>
+        <div key={animKey} className="animate-fadeUp" style={styles.stepContainer}>
           {step === 0 && <WelcomeStep  {...stepProps} />}
           {step === 1 && <ManagerStep  {...stepProps} />}
           {step === 2 && <CompanyStep  {...stepProps} />}
@@ -144,6 +144,10 @@ const styles = {
   main:    {
     flex: 1, display: 'flex', justifyContent: 'center',
     padding: '48px 24px 100px', overflowY: 'auto',
+  },
+  stepContainer: {
+    width: '100%', maxWidth: 800,
+    display: 'flex', flexDirection: 'column', alignItems: 'center',
   },
   footer: {
     position: 'fixed', bottom: 0, left: 0, right: 0,

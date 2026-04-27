@@ -20,7 +20,7 @@ export default function WelcomeStep({ employee, onNext }) {
   }
 
   return (
-    <div style={{ maxWidth: 560 }}>
+    <div style={{ width: '100%', maxWidth: 560 }}>
       <div className="animate-wave" style={{ fontSize: 56, marginBottom: 12 }}>👋</div>
       <h1 style={h1Style}>
         Hey <span style={{ color: T.accent, background: T.dark, padding: '0 12px', borderRadius: 8 }}>{employee.name}</span>.

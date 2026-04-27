@@ -8,7 +8,7 @@ const stats = [
 
 export default function CompanyStep({ onNext }) {
   return (
-    <div style={{ maxWidth: 600 }}>
+    <div style={{ width: '100%', maxWidth: 600 }}>
       <div style={eyebrow}>The company</div>
       <h2 style={h2Style}>We build products that matter.</h2>
 

@@ -12,6 +12,9 @@ export default function TeamManager() {
   const [resetLink,  setResetLink]  = useState(null)   // null | string URL
   const [generating, setGenerating] = useState(false)
   const [copied,     setCopied]     = useState(false)
+  const [search,     setSearch]     = useState('')
+  const [filterRole, setFilterRole] = useState('All')
+  const [filterDept, setFilterDept] = useState('All')
 
   const openEdit = (emp) => {
     setForm({
@@ -210,27 +213,95 @@ export default function TeamManager() {
       </div>
 
       {employees.length === 0 ? (
-        <div style={styles.empty}>No employees yet. Invite your first one from the People tab.</div>
-      ) : (
-        <div style={styles.list}>
-          {employees.map(emp => (
-            <div key={emp.id} style={styles.row2}>
-              <div style={{ ...styles.avatar, background: emp.avatarColor, color: emp.avatarText }}>
-                {emp.initials || emp.name.slice(0, 2).toUpperCase()}
+        <div style={styles.empty}>No employees yet. Invite your first one from the Onboarding tab.</div>
+      ) : (() => {
+        const roles = ['All', ...new Set(employees.map(e => e.role).filter(Boolean))]
+        const depts = ['All', ...new Set(employees.map(e => e.department).filter(Boolean))]
+        const q = search.trim().toLowerCase()
+        const filtered = employees.filter(emp => {
+          if (filterRole !== 'All' && emp.role !== filterRole) return false
+          if (filterDept !== 'All' && emp.department !== filterDept) return false
+          if (!q) return true
+          const hay = [emp.name, emp.email, emp.role, emp.department, emp.location, emp.slack].filter(Boolean).join(' ').toLowerCase()
+          return hay.includes(q)
+        })
+
+        return (
+          <>
+            <div style={styles.toolbar}>
+              <div style={styles.searchWrap}>
+                <span style={styles.searchIcon}>🔍</span>
+                <input
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Search by name, email, role, location…"
+                  style={styles.searchInput}
+                />
+                {search && (
+                  <button onClick={() => setSearch('')} style={styles.clearBtn}>✕</button>
+                )}
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 700, fontSize: 15, color: T.heading }}>{emp.name}</div>
-                <div style={{ fontSize: 13, opacity: .55 }}>
-                  {emp.role}{emp.department ? ` · ${emp.department}` : ''}{emp.email ? ` · ${emp.email}` : ''}
+              <div style={styles.filtersRow}>
+                <div style={styles.filterGroup}>
+                  <span style={styles.filterLabel}>Role</span>
+                  <div style={styles.chipRow}>
+                    {roles.map(r => (
+                      <button key={r} onClick={() => setFilterRole(r)}
+                        style={{ ...styles.chip, ...(filterRole === r ? styles.chipActive : {}) }}>
+                        {r}
+                      </button>
+                    ))}
+                  </div>
                 </div>
+                {depts.length > 1 && (
+                  <div style={styles.filterGroup}>
+                    <span style={styles.filterLabel}>Department</span>
+                    <div style={styles.chipRow}>
+                      {depts.map(d => (
+                        <button key={d} onClick={() => setFilterDept(d)}
+                          style={{ ...styles.chip, ...(filterDept === d ? styles.chipActive : {}) }}>
+                          {d}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-              {emp.isFounder && <span style={styles.founderBadge}>Founder</span>}
-              {!emp.bio && <span style={styles.incompleteBadge}>Profile incomplete</span>}
-              <button onClick={() => openEdit(emp)} style={{ ...btn('card'), padding: '7px 14px', fontSize: 13 }}>✏️ Edit profile</button>
+              <div style={styles.resultCount}>
+                {filtered.length} of {employees.length} {employees.length === 1 ? 'member' : 'members'}
+              </div>
             </div>
-          ))}
-        </div>
-      )}
+
+            {filtered.length === 0 ? (
+              <div style={styles.empty}>No team members match these filters.</div>
+            ) : (
+              <div style={styles.list}>
+                {filtered.map(emp => (
+                  <div key={emp.id} style={styles.row2}>
+                    {emp.profilePicture ? (
+                      <img src={emp.profilePicture} alt={emp.name}
+                        style={{ ...styles.avatar, objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ ...styles.avatar, background: emp.avatarColor, color: emp.avatarText }}>
+                        {emp.initials || emp.name.slice(0, 2).toUpperCase()}
+                      </div>
+                    )}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, fontSize: 15, color: T.heading }}>{emp.name}</div>
+                      <div style={{ fontSize: 13, opacity: .55 }}>
+                        {emp.role}{emp.department ? ` · ${emp.department}` : ''}{emp.email ? ` · ${emp.email}` : ''}
+                      </div>
+                    </div>
+                    {emp.isFounder && <span style={styles.founderBadge}>Founder</span>}
+                    {!emp.bio && <span style={styles.incompleteBadge}>Profile incomplete</span>}
+                    <button onClick={() => openEdit(emp)} style={{ ...btn('card'), padding: '7px 14px', fontSize: 13 }}>✏️ Edit profile</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )
+      })()}
     </div>
   )
 }
@@ -269,6 +340,18 @@ const styles = {
   founderBadge:   { fontSize: 11, fontWeight: 700, background: T.accent, color: T.dark, padding: '2px 8px', borderRadius: 100 },
   incompleteBadge:{ fontSize: 11, fontWeight: 600, background: 'rgba(234,158,131,.2)', color: '#a0412a', padding: '2px 8px', borderRadius: 100 },
   empty:          { background: T.card, borderRadius: 14, padding: '32px', textAlign: 'center', color: T.text, opacity: .6 },
+  toolbar:        { display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 16 },
+  searchWrap:     { position: 'relative', width: '100%' },
+  searchIcon:     { position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 14, opacity: .5, pointerEvents: 'none' },
+  searchInput:    { width: '100%', padding: '10px 36px 10px 38px', borderRadius: 10, border: `1.5px solid rgba(55,74,62,.12)`, background: T.card, fontSize: 14, fontFamily: 'inherit', color: T.heading, boxSizing: 'border-box' },
+  clearBtn:       { position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: T.text, opacity: .5, fontSize: 14, padding: 6 },
+  filtersRow:     { display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' },
+  filterGroup:    { display: 'flex', flexDirection: 'column', gap: 6 },
+  filterLabel:    { fontSize: 11, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: T.heading, opacity: .55 },
+  chipRow:        { display: 'flex', gap: 6, flexWrap: 'wrap' },
+  chip:           { padding: '5px 12px', borderRadius: 100, border: `1.5px solid rgba(55,74,62,.16)`, background: 'transparent', color: T.heading, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' },
+  chipActive:     { background: T.dark, color: T.accent, border: `1.5px solid ${T.dark}` },
+  resultCount:    { fontSize: 12, color: T.text, opacity: .5, fontWeight: 600 },
   divider:        { maxWidth: 680, borderTop: '1.5px solid rgba(55,74,62,.08)', margin: '28px 0 0' },
   utilSection:    { maxWidth: 680, paddingTop: 20, paddingBottom: 4 },
   utilLabel:      { fontSize: 13, fontWeight: 700, color: T.heading, marginBottom: 4 },

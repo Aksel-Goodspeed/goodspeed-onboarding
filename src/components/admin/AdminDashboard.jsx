@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useApp } from '../../context/AppContext'
 import Logo from '../shared/Logo'
 import TeamManager from './TeamManager'
@@ -9,17 +9,20 @@ import InviteForm from './InviteForm'
 import { T, btn } from '../../styles/tokens'
 
 const TABS = [
-  { id: 'employees', label: 'Onboarding' },
-  { id: 'team',      label: 'Team'    },
-  { id: 'sops',      label: 'SOPs'    },
-  { id: 'goals',     label: 'Goals'   },
+  { id: 'onboarding', label: 'Onboarding' },
+  { id: 'team',       label: 'Team'    },
+  { id: 'sops',       label: 'SOPs'    },
+  { id: 'goals',      label: 'Goals'   },
 ]
+const VALID_TAB_IDS = TABS.map(t => t.id)
 
 export default function AdminDashboard() {
   const { employees, logout } = useApp()
   const navigate = useNavigate()
+  const { tab: tabParam } = useParams()
+  const tab = VALID_TAB_IDS.includes(tabParam) ? tabParam : 'onboarding'
+  const setTab = (id) => navigate(`/admin/${id}`)
   const [copied,      setCopied]      = useState(null)
-  const [tab,         setTab]         = useState('employees')
   const [showInvite,  setShowInvite]  = useState(false)
 
   // Admin accounts are not onboarding users — exclude them from the People view
@@ -73,13 +76,13 @@ export default function AdminDashboard() {
         </div>
 
         {/* People tab */}
-        {tab === 'employees' && showInvite && (
+        {tab === 'onboarding' && showInvite && (
           <div className="animate-fadeUp">
             <InviteForm onBack={() => setShowInvite(false)} />
           </div>
         )}
 
-        {tab === 'employees' && !showInvite && (
+        {tab === 'onboarding' && !showInvite && (
           <div className="animate-fadeUp">
             {/* Stats */}
             <div style={styles.statsRow}>
@@ -125,9 +128,14 @@ export default function AdminDashboard() {
                   return (
                     <div key={emp.id} style={styles.tableRow} className="animate-cardIn">
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ ...styles.avatar, background: T.dark, color: T.accent }}>
-                          {emp.name.charAt(0).toUpperCase()}
-                        </div>
+                        {emp.profilePicture ? (
+                          <img src={emp.profilePicture} alt={emp.name}
+                            style={{ ...styles.avatar, objectFit: 'cover' }} />
+                        ) : (
+                          <div style={{ ...styles.avatar, background: emp.avatarColor || T.dark, color: emp.avatarText || T.accent }}>
+                            {(emp.initials || emp.name.charAt(0)).toUpperCase()}
+                          </div>
+                        )}
                         <div>
                           <div style={{ fontWeight: 600, fontSize: 15, color: T.heading }}>{emp.name}</div>
                           <div style={{ fontSize: 12, opacity: .55 }}>{emp.email}</div>
